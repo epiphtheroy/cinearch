@@ -8,10 +8,20 @@ async function getMovies() {
     try {
         const q = query(collection(db, 'movies'), orderBy('title', 'asc'));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            title: doc.data().title || 'Untitled',
-        }));
+        // Deduplicate movies by title
+        const uniqueMoviesMap = new Map();
+
+        querySnapshot.docs.forEach(doc => {
+            const title = doc.data().title || 'Untitled';
+            if (!uniqueMoviesMap.has(title)) {
+                uniqueMoviesMap.set(title, {
+                    id: doc.id,
+                    title
+                });
+            }
+        });
+
+        return Array.from(uniqueMoviesMap.values());
     } catch (error) {
         console.error("Error fetching movies:", error);
         return [];

@@ -9,14 +9,23 @@ async function getMovies() {
         const q = query(collection(db, 'movies'));
         const querySnapshot = await getDocs(q);
         console.log(`[Server] Fetched ${querySnapshot.size} movies`);
-        return querySnapshot.docs.map(doc => {
+        // Deduplicate movies by title
+        const uniqueMoviesMap = new Map();
+
+        querySnapshot.docs.forEach(doc => {
             const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt || null
-            };
+            const title = data.title;
+
+            if (!uniqueMoviesMap.has(title)) {
+                uniqueMoviesMap.set(title, {
+                    id: doc.id,
+                    ...data,
+                    updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt || null
+                });
+            }
         });
+
+        return Array.from(uniqueMoviesMap.values());
     } catch (error) {
         console.error("Error fetching movies:", error);
         return [];
