@@ -7,12 +7,12 @@ const execAsync = promisify(exec);
 export async function POST(_request: Request) {
     try {
         // 1. Git Add
-        await execAsync('git add .');
+        await execAsync('/usr/bin/git add .');
 
         // 2. Git Commit
         // We need to handle the case where there are no changes to commit
         try {
-            await execAsync('git commit -m "Auto-deploy from Admin Dashboard"');
+            await execAsync('/usr/bin/git commit -m "Auto-deploy from Admin Dashboard"');
         } catch (error: any) {
             if (error.stdout && error.stdout.includes('nothing to commit')) {
                 // Continue to push even if nothing to commit
@@ -23,7 +23,7 @@ export async function POST(_request: Request) {
         }
 
         // 3. Git Push
-        const { stdout, stderr } = await execAsync('git push');
+        const { stdout, stderr } = await execAsync('/usr/bin/git push');
 
         return NextResponse.json({
             message: "Successfully pushed to GitHub.",

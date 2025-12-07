@@ -5,6 +5,7 @@ import Image from 'next/image';
 import MarkdownViewer from './MarkdownViewer';
 import { clsx } from 'clsx';
 import Link from 'next/link';
+import { BATCH_CATEGORIES } from '@/config/prompts';
 
 interface Article {
     id: string;
@@ -86,24 +87,70 @@ export default function ThreeColumnLayout({ movie, articles }: ThreeColumnLayout
                 <div className="p-6 md:pt-20">
                     <h3 className="text-xs font-bold text-zinc-600 uppercase tracking-widest mb-6 px-3">Category</h3>
                     <ul className="space-y-1">
-                        {articles.map((article) => (
-                            <li key={article.id}>
-                                <button
-                                    onClick={() => setActiveArticleId(article.id)}
-                                    className={clsx(
-                                        "w-full text-left px-3 py-3 text-sm transition-all duration-200 border-l-[1px]",
-                                        activeArticleId === article.id
-                                            ? "border-white text-white font-medium bg-white/5"
-                                            : "border-transparent text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-                                    )}
-                                >
-                                    {article.categoryTitle || article.title}
-                                </button>
-                            </li>
-                        ))}
-                        {articles.length === 0 && (
-                            <li className="px-3 text-xs text-zinc-700 italic">No entries yet.</li>
-                        )}
+                        {BATCH_CATEGORIES.map((category) => {
+                            // Find matching article (case-insensitive check might be needed, but assuming exact for now based on generation)
+                            // Note: article.categoryTitle was mapped from categoryName in page.tsx
+                            const matchingArticle = articles.find(a =>
+                                (a.categoryTitle || '').toUpperCase() === category.toUpperCase()
+                            );
+
+                            const count = matchingArticle ? 1 : 0;
+                            const isActive = matchingArticle && activeArticleId === matchingArticle.id;
+                            const hasContent = !!matchingArticle;
+
+                            return (
+                                <li key={category}>
+                                    <button
+                                        onClick={() => {
+                                            if (matchingArticle) {
+                                                setActiveArticleId(matchingArticle.id);
+                                            }
+                                        }}
+                                        disabled={!hasContent}
+                                        className={clsx(
+                                            "w-full text-left px-3 py-3 text-sm transition-all duration-200 border-l-[1px] flex justify-between items-center group",
+                                            isActive
+                                                ? "border-white text-white font-medium bg-white/5" // Active content
+                                                : hasContent
+                                                    ? "border-transparent text-zinc-400 hover:text-white hover:bg-white/5 cursor-pointer" // Inactive content
+                                                    : "border-transparent text-zinc-700 cursor-default" // No content
+                                        )}
+                                    >
+                                        <span className={clsx(!hasContent && "opacity-50")}>{category}</span>
+                                        <span className={clsx(
+                                            "text-[10px] font-mono",
+                                            isActive ? "text-white/60" : hasContent ? "text-zinc-500 group-hover:text-zinc-400" : "text-zinc-800"
+                                        )}>
+                                            ({count})
+                                        </span>
+                                    </button>
+                                </li>
+                            );
+                        })}
+
+                        {/* Show 'Other' categories if any articles exist outside the batch list */}
+                        {articles
+                            .filter(a => !BATCH_CATEGORIES.some(c => c.toUpperCase() === (a.categoryTitle || '').toUpperCase()))
+                            .map(article => {
+                                const isActive = activeArticleId === article.id;
+                                return (
+                                    <li key={article.id}>
+                                        <button
+                                            onClick={() => setActiveArticleId(article.id)}
+                                            className={clsx(
+                                                "w-full text-left px-3 py-3 text-sm transition-all duration-200 border-l-[1px] flex justify-between items-center",
+                                                isActive
+                                                    ? "border-white text-white font-medium bg-white/5"
+                                                    : "border-transparent text-zinc-400 hover:text-white hover:bg-white/5"
+                                            )}
+                                        >
+                                            <span>{article.categoryTitle || article.title}</span>
+                                            <span className="text-[10px] font-mono text-zinc-500">(1)</span>
+                                        </button>
+                                    </li>
+                                );
+                            })
+                        }
                     </ul>
                 </div>
             </nav>
