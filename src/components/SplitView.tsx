@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Sidebar from './Sidebar';
 import MarkdownViewer from './MarkdownViewer';
 import { Menu, X } from 'lucide-react';

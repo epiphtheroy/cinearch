@@ -4,7 +4,7 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
     try {
         // 1. Git Add
         await execAsync('git add .');

@@ -3,9 +3,9 @@ import { db } from '@/lib/firebase'; // Ensure this exports the admin db or clie
 // Wait, @/lib/firebase usually exports client SDK. Admin SDK is in watcher.js.
 // I need to use Admin SDK in API routes for deletion if possible, or Client SDK.
 // Let's check @/lib/firebase.
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc } from 'firebase/firestore';
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
     try {
         // Delete all movies
         const moviesRef = collection(db, 'movies');

@@ -23,7 +23,7 @@ export interface MovieQueueItem {
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 // Column indices (0-based) based on: TMDB_ID | Movie Title | Status | Category
 const COL_TMDB_ID = 0;
-const COL_TITLE_IGNORED = 1; // Just for reference in sheet
+// const COL_TITLE_IGNORED = 1; // Just for reference in sheet
 const COL_STATUS = 2; // Column C
 const COL_CATEGORY = 3; // Column D
 
@@ -88,12 +88,12 @@ export async function updateRowStatus(rowIndex: number, newStatus: string) {
 }
 
 // Helper to extract Doc ID from URL or return as is
-function extractDocId(input: string): string | undefined {
-    if (!input) return undefined;
-    // Simple regex for standard doc URLs
-    const match = input.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    return match ? match[1] : input;
-}
+// function extractDocId(input: string): string | undefined {
+//     if (!input) return undefined;
+//     // Simple regex for standard doc URLs
+//     const match = input.match(/\/d\/([a-zA-Z0-9-_]+)/);
+//     return match ? match[1] : input;
+// }
 
 // Helper to parse Google Doc content
 function readStructuralElements(elements: any[]): string {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithRedirect, signOut, onAuthStateChanged, User, getRedirectResult } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, signOut, onAuthStateChanged, User } from 'firebase/auth';
 
 export default function AuthButton() {
     const [user, setUser] = useState<User | null>(null);
@@ -35,6 +35,7 @@ export default function AuthButton() {
         return (
             <div className="flex items-center gap-4">
                 {user.photoURL && (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={user.photoURL} alt={user.displayName || 'User'} className="w-8 h-8 rounded-full" />
                 )}
                 <button

@@ -13,7 +13,7 @@ function sanitizeFilename(name: string): string {
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
-export async function POST(request: Request) {
+export async function POST(_request: Request) {
     try {
         const queue = await getMovieQueue();
 

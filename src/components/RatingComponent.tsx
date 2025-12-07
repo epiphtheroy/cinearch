@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/lib/firebase';
-import { doc, setDoc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { Star, Eye, EyeOff } from 'lucide-react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
@@ -10,7 +10,7 @@ export default function RatingComponent({ movieId }: { movieId: string }) {
     const [user, setUser] = useState<User | null>(null);
     const [rating, setRating] = useState<number>(0);
     const [isWatched, setIsWatched] = useState<boolean>(false);
-    const [loading, setLoading] = useState(true);
+    // const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {

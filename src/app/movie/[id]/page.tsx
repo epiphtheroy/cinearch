@@ -55,7 +55,7 @@ async function getArticles(movieId: string) {
         return snapshot.docs.map(doc => {
             const data = doc.data();
             // Exclude 'movieId' (Reference) and convert 'updatedAt'
-            const { movieId, ...serializableData } = data;
+            const { movieId: _movieId, ...serializableData } = data;
             return {
                 id: doc.id,
                 title: data.title || 'Untitled Article',
