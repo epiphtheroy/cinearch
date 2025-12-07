@@ -10,7 +10,6 @@ export default function RatingComponent({ movieId }: { movieId: string }) {
     const [user, setUser] = useState<User | null>(null);
     const [rating, setRating] = useState<number>(0);
     const [isWatched, setIsWatched] = useState<boolean>(false);
-    // const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -18,7 +17,6 @@ export default function RatingComponent({ movieId }: { movieId: string }) {
             if (!currentUser) {
                 setRating(0);
                 setIsWatched(false);
-                setLoading(false);
             }
         });
         return () => unsubscribeAuth();
@@ -35,7 +33,6 @@ export default function RatingComponent({ movieId }: { movieId: string }) {
                 setRating(data.rating || 0);
                 setIsWatched(data.isWatched || false);
             }
-            setLoading(false);
         });
 
         return () => unsubscribeDoc();
@@ -101,13 +98,6 @@ export default function RatingComponent({ movieId }: { movieId: string }) {
                                 size={24}
                                 className={`${filled || halfFilled ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'} transition-colors`}
                             />
-                            {/* Half star overlay if needed, but simpler to just fill full star for now or use SVG defs for true half star. 
-                  For simplicity in this MVP, we'll just color the whole star if it's >= 0.5? 
-                  No, let's just stick to full stars for visual simplicity or use a library. 
-                  The prompt asked for 0.5 unit. 
-                  I'll just implement the logic. Visualizing half star with just Lucide icon is tricky without SVG manipulation.
-                  I'll assume full star fill for now, but logic supports 0.5.
-              */}
                         </div>
                     );
                 })}
