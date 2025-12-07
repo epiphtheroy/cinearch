@@ -2,13 +2,30 @@
 
 import { useState, useEffect } from 'react';
 import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithRedirect, signOut, onAuthStateChanged, User } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, signOut, onAuthStateChanged, User, getRedirectResult } from 'firebase/auth';
 
 export default function AuthButton() {
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
+        // Check for redirect result
+        getRedirectResult(auth)
+            .then((result) => {
+                if (result) {
+                    console.log("Redirect login success:", result.user);
+                    setUser(result.user);
+                } else {
+                    console.log("No redirect result found (normal page load)");
+                }
+            })
+            .catch((error) => {
+                console.error("Redirect login error details:", error.code, error.message);
+                alert(`Login Error: ${error.message}`); // Show alert to user so they can report it
+            });
+
+        // Listen for auth state changes
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            console.log("Auth state changed:", currentUser?.email);
             setUser(currentUser);
         });
         return () => unsubscribe();
