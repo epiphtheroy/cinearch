@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import AlphaIndex from './AlphaIndex';
 
 interface Movie {
     id: string;
@@ -17,96 +18,116 @@ interface Movie {
 }
 
 export default function MovieGrid({ initialMovies }: { initialMovies: any[] }) {
+    const [activeLetter, setActiveLetter] = useState<string>('#');
     const [searchTerm, setSearchTerm] = useState('');
-    const [sortBy, setSortBy] = useState<'latest' | 'year' | 'title'>('latest');
 
-    const filteredMovies = useMemo(() => {
-        let result = [...initialMovies];
+    // Group movies by First Letter
+    const groupedMovies = useMemo(() => {
+        const groups: Record<string, Movie[]> = {};
+        const term = searchTerm.toLowerCase();
 
-        // Filter
-        if (searchTerm) {
-            const lowerTerm = searchTerm.toLowerCase();
-            result = result.filter(movie =>
-                movie.title?.toLowerCase().includes(lowerTerm) ||
-                movie.metadata?.director?.toLowerCase().includes(lowerTerm)
-            );
-        }
+        initialMovies.forEach(movie => {
+            if (term && !movie.title.toLowerCase().includes(term)) return;
 
-        // Sort
-        result.sort((a, b) => {
-            if (sortBy === 'year') {
-                return (b.metadata?.year || 0) - (a.metadata?.year || 0);
-            } else if (sortBy === 'title') {
-                return (a.title || '').localeCompare(b.title || '');
-            } else {
-                // Default: Latest (assuming updatedAt or just original order if desc)
-                return 0;
-            }
+            const firstChar = (movie.title?.[0] || '#').toUpperCase();
+            // Check if char is alphabet
+            const key = /^[A-Z]$/.test(firstChar) ? firstChar : '#';
+
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(movie);
         });
 
-        return result;
-    }, [initialMovies, searchTerm, sortBy]);
+        // Sort movies within groups
+        Object.keys(groups).forEach(key => {
+            groups[key].sort((a, b) => a.title.localeCompare(b.title));
+        });
+
+        return groups;
+    }, [initialMovies, searchTerm]);
+
+    const scrollToLetter = (letter: string) => {
+        setActiveLetter(letter);
+        const element = document.getElementById(`section-${letter}`);
+        if (element) {
+            // Offset for sticky header
+            const headerOffset = 120;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+        }
+    };
 
     return (
-        <div>
-            {/* Search & Filter Bar */}
-            <div className="flex flex-col md:flex-row gap-4 mb-8 sticky top-0 bg-gray-900/90 backdrop-blur-sm p-4 z-10 border-b border-gray-800">
-                <input
-                    type="text"
-                    placeholder="Search movies or directors..."
-                    className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+        <div className="w-full">
+            <AlphaIndex onSelect={scrollToLetter} activeLetter={activeLetter} />
 
-                <select
-                    className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
-                >
-                    <option value="latest">Latest Added</option>
-                    <option value="year">Release Year</option>
-                    <option value="title">Title (A-Z)</option>
-                </select>
-            </div>
-
-            {/* Grid */}
-            {filteredMovies.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-                    <p className="text-xl font-medium mb-2">No movies found</p>
-                    <p className="text-sm">
-                        {searchTerm
-                            ? "Try adjusting your search terms."
-                            : "No movies have been added to the archive yet."}
-                    </p>
+            <div className="max-w-[1920px] mx-auto px-6 py-8">
+                {/* Search - Minimal */}
+                <div className="mb-12 flex justify-end">
+                    <input
+                        type="text"
+                        placeholder="Search archive..."
+                        className="bg-transparent border-b border-zinc-800 focus:border-white px-0 py-2 w-64 text-sm outline-none transition-colors text-right placeholder-zinc-700"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
                 </div>
-            ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {filteredMovies.map((movie) => (
-                        <Link href={`/movie/${movie.id}`} key={movie.id} className="group">
-                            <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 mb-2 transition-transform group-hover:scale-105">
-                                {movie.metadata?.posterUrl ? (
-                                    <Image
-                                        src={movie.metadata.posterUrl}
-                                        alt={movie.title}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                ) : (
-                                    <div className="flex items-center justify-center h-full text-gray-500">
-                                        No Poster
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                                    <span className="text-sm font-medium">{movie.metadata?.director}</span>
-                                    <span className="text-xs text-gray-300">{movie.metadata?.year}</span>
+
+                <div className="space-y-16">
+                    {/* Render groups based on ALPHABET order */}
+                    {"#ABCDEFGHIJKLMNOPQRSTUVWXYZ".split('').map(letter => {
+                        const movies = groupedMovies[letter];
+                        if (!movies || movies.length === 0) return null;
+
+                        return (
+                            <section key={letter} id={`section-${letter}`} className="scroll-mt-32">
+                                <div className="flex items-baseline gap-4 mb-6 border-b border-zinc-900 pb-2">
+                                    <h2 className="text-4xl font-serif text-white/20 font-light">{letter}</h2>
+                                    <span className="text-xs text-zinc-600 font-mono">{movies.length} items</span>
                                 </div>
-                            </div>
-                            <h3 className="font-semibold truncate">{movie.title}</h3>
-                        </Link>
-                    ))}
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-12">
+                                    {movies.map((movie) => (
+                                        <Link href={`/movie/${movie.id}`} key={movie.id} className="group block">
+                                            {/* Minimal Poster Ratio */}
+                                            <div className="relative aspect-[2/3] bg-zinc-900 overflow-hidden mb-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                                                {movie.metadata?.posterUrl ? (
+                                                    <Image
+                                                        src={movie.metadata.posterUrl}
+                                                        alt={movie.title}
+                                                        fill
+                                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                                    />
+                                                ) : (
+                                                    <div className="flex items-center justify-center h-full text-zinc-800 text-xs">
+                                                        NO IMAGE
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Minimal Info */}
+                                            <div className="space-y-1">
+                                                <h3 className="text-sm font-medium text-zinc-300 group-hover:text-white truncate transition-colors">
+                                                    {movie.title}
+                                                </h3>
+                                                <div className="flex items-center gap-2 text-[10px] text-zinc-600 uppercase tracking-wider">
+                                                    <span>{movie.metadata?.year}</span>
+                                                    <span>•</span>
+                                                    <span className="truncate max-w-[100px]">{movie.metadata?.director}</span>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </section>
+                        );
+                    })}
                 </div>
-            )}
+            </div>
         </div>
     );
 }

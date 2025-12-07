@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import SplitView from '@/components/SplitView';
+import ThreeColumnLayout from '@/components/ThreeColumnLayout';
 import Link from 'next/link';
 
 async function getMovieData(id: string) {
@@ -33,8 +33,10 @@ async function getMovieData(id: string) {
     const data = movieSnap.data();
     return {
         id: movieSnap.id,
+        title: data?.title || 'Untitled', // Ensure title exists
+        metadata: data?.metadata || {},
         ...data,
-        updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt || null
+        updatedAt: data?.updatedAt?.toDate?.().toISOString() || data?.updatedAt || null
     };
 }
 
@@ -56,6 +58,9 @@ async function getArticles(movieId: string) {
             const { movieId, ...serializableData } = data;
             return {
                 id: doc.id,
+                title: data.title || 'Untitled Article',
+                content: data.content || '',
+                categoryTitle: data.categoryTitle || data.category || 'General',
                 ...serializableData,
                 updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt || null
             };
@@ -104,5 +109,5 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
 
     const articles = await getArticles(movie.id);
 
-    return <SplitView movie={movie} articles={articles} />;
+    return <ThreeColumnLayout movie={movie} articles={articles} />;
 }
