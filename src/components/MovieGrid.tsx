@@ -71,31 +71,42 @@ export default function MovieGrid({ initialMovies }: { initialMovies: any[] }) {
             </div>
 
             {/* Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {filteredMovies.map((movie) => (
-                    <Link href={`/movie/${movie.id}`} key={movie.id} className="group">
-                        <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 mb-2 transition-transform group-hover:scale-105">
-                            {movie.metadata?.posterUrl ? (
-                                <Image
-                                    src={movie.metadata.posterUrl}
-                                    alt={movie.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            ) : (
-                                <div className="flex items-center justify-center h-full text-gray-500">
-                                    No Poster
+            {filteredMovies.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                    <p className="text-xl font-medium mb-2">No movies found</p>
+                    <p className="text-sm">
+                        {searchTerm
+                            ? "Try adjusting your search terms."
+                            : "No movies have been added to the archive yet."}
+                    </p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                    {filteredMovies.map((movie) => (
+                        <Link href={`/movie/${movie.id}`} key={movie.id} className="group">
+                            <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-gray-800 mb-2 transition-transform group-hover:scale-105">
+                                {movie.metadata?.posterUrl ? (
+                                    <Image
+                                        src={movie.metadata.posterUrl}
+                                        alt={movie.title}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-full text-gray-500">
+                                        No Poster
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
+                                    <span className="text-sm font-medium">{movie.metadata?.director}</span>
+                                    <span className="text-xs text-gray-300">{movie.metadata?.year}</span>
                                 </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4">
-                                <span className="text-sm font-medium">{movie.metadata?.director}</span>
-                                <span className="text-xs text-gray-300">{movie.metadata?.year}</span>
                             </div>
-                        </div>
-                        <h3 className="font-semibold truncate">{movie.title}</h3>
-                    </Link>
-                ))}
-            </div>
+                            <h3 className="font-semibold truncate">{movie.title}</h3>
+                        </Link>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
