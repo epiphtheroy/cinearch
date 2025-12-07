@@ -8,9 +8,21 @@ import axios from 'axios';
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
     try {
-        admin.initializeApp({
-            credential: admin.credential.applicationDefault()
-        });
+        const serviceAccountJson = process.env.GOOGLE_CREDENTIALS_JSON;
+        if (serviceAccountJson) {
+            // Use JSON string from env var (Netlify)
+            const serviceAccount = JSON.parse(serviceAccountJson);
+            admin.initializeApp({
+                credential: admin.credential.cert(serviceAccount)
+            });
+            console.log('Firebase Admin initialized with GOOGLE_CREDENTIALS_JSON');
+        } else {
+            // Fallback to auto-discovery (Local watcher with file path)
+            admin.initializeApp({
+                credential: admin.credential.applicationDefault()
+            });
+            console.log('Firebase Admin initialized with applicationDefault');
+        }
     } catch (error: any) {
         console.error('Firebase Admin Init Error:', error.message);
     }

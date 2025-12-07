@@ -4,7 +4,7 @@ import { generateMovieContent } from '@/lib/llm';
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios'; // Added axios
-import { PROMPT_MAP } from '@/config/prompts';
+import { PROMPT_MAP, BATCH_CATEGORIES } from '@/config/prompts';
 
 // Helper to sanitize filename
 function sanitizeFilename(name: string): string {
@@ -47,50 +47,62 @@ export async function POST(_request: Request) {
                     throw new Error("TMDB_API_KEY is missing. Cannot fetch movie title from ID.");
                 }
 
-                // 1. Get Prompt Doc ID from Category Map
-                const categoryName = item.promptDocId || "Default"; // We stored category in promptDocId field
-                const promptDocId = PROMPT_MAP[categoryName] || PROMPT_MAP["Default"];
+                // Determine Categories to Process
+                const targetCategories = item.status === '2' ? BATCH_CATEGORIES : [item.promptDocId || "Default"];
 
-                if (!promptDocId) {
-                    throw new Error(`No prompt Doc ID found for category: ${categoryName}`);
-                }
+                console.log(`Processing Row ${item.rowIndex} (ID: ${item.tmdbId}). Mode: ${item.status === '2' ? 'Batch' : 'Single'}. Categories: ${targetCategories.length}`);
 
-                const promptContent = await getPromptContent(promptDocId);
+                for (const catName of targetCategories) {
+                    // 1. Get Prompt Doc ID
+                    const promptDocId = PROMPT_MAP[catName];
 
-                // 2. Generate Content
-                const generatedMarkdown = await generateMovieContent(movieTitle, promptContent);
+                    if (!promptDocId) {
+                        console.warn(`[Batch] Skipping category '${catName}' - No Doc ID configured.`);
+                        continue;
+                    }
 
-                // 3. Save File
-                // Format: [movieId]Title_[catId]Category.md
-                // Use the ID from the sheet as the movieId in filename
-                const movieId = item.tmdbId;
-                const catId = "10";
-                const catTitle = sanitizeFilename(categoryName);
+                    // Delay for 3 seconds if Batch mode (to avoid rate limits or overwhelm)
+                    if (item.status === '2') {
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                    }
 
-                const filename = `[${movieId}]${sanitizeFilename(movieTitle)}_[${catId}]${catTitle}.md`;
-                const outputPath = path.join(process.cwd(), 'source_md', filename);
+                    const promptContent = await getPromptContent(promptDocId);
 
-                // Ensure directory exists
-                if (!fs.existsSync(path.dirname(outputPath))) {
-                    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-                }
+                    // 2. Generate Content
+                    const generatedMarkdown = await generateMovieContent(movieTitle, promptContent);
 
-                // Prepend Frontmatter
-                const frontmatter = `---
+                    // 3. Save File
+                    // Format: [movieId]Title_[catId]Category.md
+                    // Use the ID from the sheet as the movieId in filename
+                    const movieId = item.tmdbId;
+                    const catId = item.status === '2' ? "20" : "10"; // Distinguish batch generated? or just use 10? User didn't specify. Let's use 10 for consistency or 20 for batch. 
+                    // User said "implying category". I'll use "10" as before unless requested.
+                    const catTitle = sanitizeFilename(catName);
+
+                    const filename = `[${movieId}]${sanitizeFilename(movieTitle)}_[${catId}]${catTitle}.md`;
+                    const outputPath = path.join(process.cwd(), 'source_md', filename);
+
+                    // Ensure directory exists
+                    if (!fs.existsSync(path.dirname(outputPath))) {
+                        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+                    }
+
+                    // Prepend Frontmatter
+                    const frontmatter = `---
 movieId: ${movieId}
 movieTitle: ${movieTitle}
 categoryId: ${catId}
-categoryName: ${categoryName}
+categoryName: ${catName}
 ---
 
 `;
 
-                fs.writeFileSync(outputPath, frontmatter + generatedMarkdown);
+                    fs.writeFileSync(outputPath, frontmatter + generatedMarkdown);
+                    results.push({ title: movieTitle, category: catName, status: 'Success', file: filename });
+                }
 
                 // 4. Update Status
                 await updateRowStatus(item.rowIndex, 'Done');
-
-                results.push({ title: movieTitle, status: 'Success', file: filename });
 
             } catch (error: any) {
                 console.error(`Failed to process row ${item.rowIndex} (ID: ${item.tmdbId}):`, error);

@@ -2,12 +2,21 @@ import { google } from 'googleapis';
 
 // Initialize auth - assumes GOOGLE_APPLICATION_CREDENTIALS env var is set
 // or we can manually load from a path if needed.
-const auth = new google.auth.GoogleAuth({
+// Initialize auth
+// Support both file path (local) and JSON content (Netlify env var)
+const authOptions: any = {
     scopes: [
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/documents.readonly'
     ]
-});
+};
+
+if (process.env.GOOGLE_CREDENTIALS_JSON) {
+    authOptions.credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+}
+// Else it falls back to GOOGLE_APPLICATION_CREDENTIALS automatically
+
+const auth = new google.auth.GoogleAuth(authOptions);
 
 const sheets = google.sheets({ version: 'v4', auth });
 const docs = google.docs({ version: 'v1', auth });
@@ -44,13 +53,13 @@ export async function getMovieQueue(): Promise<MovieQueueItem[]> {
         const status = row[COL_STATUS];
         const category = row[COL_CATEGORY];
 
-        // Check if status is '1' (Ready) and we have an ID
-        if (tmdbId && status === '1') {
+        // Check if status is '1' (Single) or '2' (Batch) and we have an ID
+        if (tmdbId && (status === '1' || status === '2')) {
             queue.push({
                 rowIndex: index + 2, // +2 because 1-based and header row
                 tmdbId: tmdbId,
                 status: status,
-                promptDocId: category // We temporarily store category name here, will map later
+                promptDocId: category // For Status 1, this is category. For 2, maybe empty.
             });
         }
     });
