@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Search, Plus } from 'lucide-react';
-import AuthButton from './AuthButton';
 
 export default function Navbar() {
     return (
