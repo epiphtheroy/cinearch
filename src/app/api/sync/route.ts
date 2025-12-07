@@ -5,30 +5,32 @@ import matter from 'gray-matter';
 import * as admin from 'firebase-admin';
 import axios from 'axios';
 
-// Initialize Firebase Admin if not already initialized
-if (!admin.apps.length) {
-    try {
-        const serviceAccountJson = process.env.GOOGLE_CREDENTIALS_JSON;
-        if (serviceAccountJson) {
-            // Use JSON string from env var (Netlify)
-            const serviceAccount = JSON.parse(serviceAccountJson);
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount)
-            });
-            console.log('Firebase Admin initialized with GOOGLE_CREDENTIALS_JSON');
-        } else {
-            // Fallback to auto-discovery (Local watcher with file path)
-            admin.initializeApp({
-                credential: admin.credential.applicationDefault()
-            });
-            console.log('Firebase Admin initialized with applicationDefault');
+// Lazy initialization helper
+function getAdminDb() {
+    if (!admin.apps.length) {
+        try {
+            const serviceAccountJson = process.env.GOOGLE_CREDENTIALS_JSON;
+            if (serviceAccountJson) {
+                const serviceAccount = JSON.parse(serviceAccountJson);
+                admin.initializeApp({
+                    credential: admin.credential.cert(serviceAccount)
+                });
+                console.log('Firebase Admin initialized with GOOGLE_CREDENTIALS_JSON');
+            } else {
+                // Fallback for local dev
+                admin.initializeApp({
+                    credential: admin.credential.applicationDefault()
+                });
+                console.log('Firebase Admin initialized with applicationDefault');
+            }
+        } catch (error: any) {
+            console.error('Firebase Admin Init Error:', error.message);
+            throw error; // Re-throw to handle in caller
         }
-    } catch (error: any) {
-        console.error('Firebase Admin Init Error:', error.message);
     }
+    return admin.firestore();
 }
 
-const db = admin.firestore();
 const WATCH_DIR = path.join(process.cwd(), 'source_md');
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+?)_?\[(?<catId>\d+)\](?<catTitle>.+)\.md$/;
@@ -36,6 +38,8 @@ const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+?)_?\[(?<catId>\d+)\
 export async function POST() {
     try {
         console.log(`Starting sync from: ${WATCH_DIR}`);
+        const db = getAdminDb();
+
 
         if (!fs.existsSync(WATCH_DIR)) {
             return NextResponse.json({
