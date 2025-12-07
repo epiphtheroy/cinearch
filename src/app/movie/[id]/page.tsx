@@ -44,13 +44,15 @@ async function getArticles(movieId: string) {
     // Extract raw numeric ID for querying (e.g. "movie_0010" -> "0010")
     // This assumes the 'movieIdStr' field in articles stores the raw numeric ID (e.g. "0010")
     const rawId = movieId.replace('movie_', '');
+    const prefixedId = movieId.startsWith('movie_') ? movieId : `movie_${movieId}`;
 
-    console.log(`[Server] Querying articles for raw ID: ${rawId}`);
+    console.log(`[Server] Querying articles for IDs: ${rawId}, ${prefixedId}`);
 
     try {
-        const q = query(collection(db, 'articles'), where('movieIdStr', '==', rawId));
+        // Query for both raw ID and prefixed ID to handle inconsistencies
+        const q = query(collection(db, 'articles'), where('movieIdStr', 'in', [rawId, prefixedId]));
         const snapshot = await getDocs(q);
-        console.log(`[Server] Fetched ${snapshot.size} articles for movie ${rawId}`);
+        console.log(`[Server] Fetched ${snapshot.size} articles for movie ${rawId} (checked variants)`);
 
         return snapshot.docs.map(doc => {
             const data = doc.data();

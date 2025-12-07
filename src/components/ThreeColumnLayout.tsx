@@ -112,17 +112,29 @@ export default function ThreeColumnLayout({ movie, articles }: ThreeColumnLayout
                                             isActive
                                                 ? "border-white text-white font-medium bg-white/5" // Active content
                                                 : hasContent
-                                                    ? "border-transparent text-zinc-400 hover:text-white hover:bg-white/5 cursor-pointer" // Inactive content
-                                                    : "border-transparent text-zinc-700 cursor-default" // No content
+                                                    ? "border-transparent text-zinc-300 hover:text-white hover:bg-white/5 cursor-pointer" // Inactive content (made brighter)
+                                                    : "border-transparent text-zinc-500 cursor-default" // No content (made visible)
                                         )}
                                     >
-                                        <span className={clsx(!hasContent && "opacity-50")}>{category}</span>
-                                        <span className={clsx(
-                                            "text-[10px] font-mono",
-                                            isActive ? "text-white/60" : hasContent ? "text-zinc-500 group-hover:text-zinc-400" : "text-zinc-800"
-                                        )}>
-                                            ({count})
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {/* Indicator for content */}
+                                            {hasContent && (
+                                                <span className={clsx(
+                                                    "w-1.5 h-1.5 rounded-full",
+                                                    isActive ? "bg-purple-400" : "bg-purple-600/70"
+                                                )} />
+                                            )}
+                                            <span className={clsx(!hasContent && "pl-3.5")}>{category}</span>
+                                        </div>
+
+                                        {hasContent && (
+                                            <span className={clsx(
+                                                "text-[10px] font-mono",
+                                                isActive ? "text-white/60" : "text-zinc-500 group-hover:text-zinc-400"
+                                            )}>
+                                                {count > 1 ? count : ''}
+                                            </span>
+                                        )}
                                     </button>
                                 </li>
                             );
@@ -138,14 +150,19 @@ export default function ThreeColumnLayout({ movie, articles }: ThreeColumnLayout
                                         <button
                                             onClick={() => setActiveArticleId(article.id)}
                                             className={clsx(
-                                                "w-full text-left px-3 py-3 text-sm transition-all duration-200 border-l-[1px] flex justify-between items-center",
+                                                "w-full text-left px-3 py-3 text-sm transition-all duration-200 border-l-[1px] flex justify-between items-center group",
                                                 isActive
                                                     ? "border-white text-white font-medium bg-white/5"
-                                                    : "border-transparent text-zinc-400 hover:text-white hover:bg-white/5"
+                                                    : "border-transparent text-zinc-300 hover:text-white hover:bg-white/5"
                                             )}
                                         >
-                                            <span>{article.categoryTitle || article.title}</span>
-                                            <span className="text-[10px] font-mono text-zinc-500">(1)</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className={clsx(
+                                                    "w-1.5 h-1.5 rounded-full",
+                                                    isActive ? "bg-purple-400" : "bg-purple-600/70"
+                                                )} />
+                                                <span>{article.categoryTitle || article.title}</span>
+                                            </div>
                                         </button>
                                     </li>
                                 );
