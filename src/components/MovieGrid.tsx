@@ -94,13 +94,13 @@ export default function MovieGrid({ initialMovies }: { initialMovies: any[] }) {
                                     {movies.map((movie) => (
                                         <Link href={`/movie/${movie.id}`} key={movie.id} className="group block">
                                             {/* Minimal Poster Ratio */}
-                                            <div className="relative aspect-[2/3] bg-zinc-900 overflow-hidden mb-3 opacity-80 group-hover:opacity-100 transition-opacity">
+                                            <div className="relative aspect-[2/3] bg-zinc-900 overflow-hidden mb-3 opacity-90 group-hover:opacity-100 transition-all duration-300 border border-transparent group-hover:border-white/20 group-hover:shadow-lg group-hover:shadow-purple-500/10">
                                                 {movie.metadata?.posterUrl ? (
                                                     <Image
                                                         src={movie.metadata.posterUrl}
                                                         alt={movie.title}
                                                         fill
-                                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                                        className="object-cover transition-transform duration-700 group-hover:scale-105"
                                                     />
                                                 ) : (
                                                     <div className="flex items-center justify-center h-full text-zinc-800 text-xs">

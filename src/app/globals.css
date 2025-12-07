@@ -3,9 +3,11 @@
 @tailwind utilities;
 
 :root {
-  /* Cinematic Dark Theme Palette */
-  --background: #050505;
-  --foreground: #F2F2F2;
+  /* Cinematic Dark Theme Palette - Refined */
+  --background: #0a0a0a;
+  /* Rich Charcoal Black */
+  --foreground: #e5e5e5;
+  /* Off-white */
 
   /* Accents */
   --primary: #8B5CF6;
@@ -14,10 +16,12 @@
   --secondary: #27272A;
   /* Zinc 800 */
 
-  /* Text */
-  --text-primary: #F2F2F2;
-  --text-secondary: #A1A1AA;
-  --text-muted: #52525B;
+  /* Text - Tonal Variations */
+  --text-primary: #e5e5e5;
+  --text-secondary: #a3a3a3;
+  /* Neutral 400 */
+  --text-muted: #525252;
+  /* Neutral 600 */
 
   /* Card / Glass */
   --card-bg: rgba(20, 20, 20, 0.6);

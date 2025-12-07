@@ -173,27 +173,38 @@ export default function ThreeColumnLayout({ movie, articles }: ThreeColumnLayout
             </nav>
 
             {/* Column 3: Reading Area (Right) */}
-            <main className="flex-1 min-h-screen bg-background relative">
+            <main className="flex-1 min-h-screen bg-background relative flex items-center justify-center p-4 md:p-8">
                 {activeArticle ? (
-                    <div className="max-w-3xl mx-auto px-8 py-16 md:py-24 animate-in fade-in duration-500">
-                        {/* Article Header */}
-                        <header className="mb-12 border-b border-zinc-900 pb-8">
-                            <span className="text-xs font-mono text-purple-400 mb-2 block uppercase tracking-wider">
-                                {activeArticle.categoryTitle || 'Entry'}
-                            </span>
-                            <h2 className="text-3xl md:text-4xl font-serif text-white leading-tight">
-                                {activeArticle.title}
-                            </h2>
-                        </header>
+                    <div className="w-full max-w-4xl h-full md:h-[90vh] md:overflow-y-auto hide-scrollbar bg-[#0f0f0f] border border-zinc-800/60 shadow-2xl relative">
+                        {/* Stationery Effect: Top Accent */}
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-50"></div>
 
-                        {/* Content */}
-                        <div className="prose prose-invert prose-lg max-w-none font-serif text-zinc-300/90 leading-loose">
-                            <MarkdownViewer content={activeArticle.content} />
+                        <div className="px-8 py-12 md:px-16 md:py-20 animate-in fade-in duration-700 slide-in-from-bottom-4">
+                            {/* Article Header - Minimal & Artistic */}
+                            <header className="mb-16 border-b border-zinc-900 pb-8 text-center">
+                                <span className="text-[10px] font-mono text-zinc-500 mb-4 block uppercase tracking-[0.2em]">
+                                    {activeArticle.categoryTitle || 'Entry'}
+                                </span>
+                                <h2 className="text-3xl md:text-5xl font-serif text-[#e5e5e5] leading-tight tracking-tight">
+                                    {activeArticle.title}
+                                </h2>
+                            </header>
+
+                            {/* Content - High Tonal Contrast but Readable */}
+                            <div className="prose prose-invert prose-lg max-w-none font-serif text-[#d4d4d4] leading-loose mix-blend-screen">
+                                <MarkdownViewer content={activeArticle.content} />
+                            </div>
+
+                            {/* Stationery Footer Mark */}
+                            <div className="mt-24 pt-12 border-t border-zinc-900 flex justify-center opacity-30">
+                                <div className="w-3 h-3 rounded-full border border-zinc-600"></div>
+                            </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="h-full flex items-center justify-center text-zinc-700 text-sm">
-                        Select an item to view content.
+                    <div className="h-full flex flex-col items-center justify-center text-zinc-600 space-y-4">
+                        <div className="w-12 h-[1px] bg-zinc-800"></div>
+                        <p className="text-xs font-mono uppercase tracking-widest">Select an entry</p>
                     </div>
                 )}
             </main>
