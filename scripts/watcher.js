@@ -126,6 +126,7 @@ async function processFile(filePath, event) {
             movieId: movieRef, // Reference (keep for potential future use)
             movieIdStr: movieId, // String ID for easier querying
             movieTitle: frontmatter.movieTitle || movieTitle,
+            title: frontmatter.title || 'Untitled', // Specific article title
             categoryId: parseInt(catId),
             categoryName: frontmatter.categoryName || catTitle,
             content: content.trim(),

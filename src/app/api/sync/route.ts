@@ -115,6 +115,7 @@ export async function POST() {
                 batch.set(articleRef, {
                     movieIdStr: movieId,
                     movieTitle: frontmatter.movieTitle || movieTitle,
+                    title: frontmatter.title || 'Untitled', // Specific article title
                     categoryId: parseInt(catId),
                     categoryName: frontmatter.categoryName || catTitle,
                     content: content.trim(),
