@@ -78,6 +78,30 @@ export default function AdminPage() {
         }
     };
 
+    const handleSync = async () => {
+        setLoading(true);
+        setLogs(prev => [...prev, "Starting sync from source_md..."]);
+        try {
+            const res = await fetch('/api/sync', { method: 'POST' });
+            const data = await res.json();
+
+            if (res.ok) {
+                setLogs(prev => [...prev, `Sync Complete: ${data.message}`]);
+                if (data.results) {
+                    const params = data.results;
+                    const successCount = params.filter((r: any) => r.status === 'uploaded').length;
+                    setLogs(prev => [...prev, `Uploaded: ${successCount} files`]);
+                }
+            } else {
+                setLogs(prev => [...prev, `Error: ${data.error}`]);
+            }
+        } catch (error: any) {
+            setLogs(prev => [...prev, `Network Error: ${error.message}`]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen p-8 bg-gray-900 text-white font-sans">
             <h1 className="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500">
@@ -92,11 +116,22 @@ export default function AdminPage() {
 
                 <div className="flex flex-wrap gap-4">
                     <button
+                        onClick={handleSync}
+                        disabled={loading}
+                        className={`px-6 py-3 rounded-md font-medium transition-colors ${loading
+                            ? 'bg-gray-600 cursor-not-allowed'
+                            : 'bg-green-600 hover:bg-green-700 text-white'
+                            }`}
+                    >
+                        Sync Local Files (source_md)
+                    </button>
+
+                    <button
                         onClick={handleGenerate}
                         disabled={loading}
                         className={`px-6 py-3 rounded-md font-medium transition-colors ${loading
-                                ? 'bg-gray-600 cursor-not-allowed'
-                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            ? 'bg-gray-600 cursor-not-allowed'
+                            : 'bg-blue-600 hover:bg-blue-700 text-white'
                             }`}
                     >
                         {loading ? 'Processing...' : 'Start Generation'}
@@ -106,8 +141,8 @@ export default function AdminPage() {
                         onClick={handleClear}
                         disabled={loading}
                         className={`px-6 py-3 rounded-md font-medium transition-colors ${loading
-                                ? 'bg-gray-600 cursor-not-allowed'
-                                : 'bg-red-600 hover:bg-red-700 text-white'
+                            ? 'bg-gray-600 cursor-not-allowed'
+                            : 'bg-red-600 hover:bg-red-700 text-white'
                             }`}
                     >
                         Clear Database
@@ -117,8 +152,8 @@ export default function AdminPage() {
                         onClick={handleDeploy}
                         disabled={loading}
                         className={`px-6 py-3 rounded-md font-medium transition-colors ${loading
-                                ? 'bg-gray-600 cursor-not-allowed'
-                                : 'bg-purple-600 hover:bg-purple-700 text-white'
+                            ? 'bg-gray-600 cursor-not-allowed'
+                            : 'bg-purple-600 hover:bg-purple-700 text-white'
                             }`}
                     >
                         Deploy to GitHub
