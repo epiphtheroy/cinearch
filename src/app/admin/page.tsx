@@ -57,22 +57,29 @@ export default function AdminPage() {
     };
 
     const handleDeploy = async () => {
+        if (!confirm("This will push all changes to GitHub and trigger a Netlify build. It may take 1-2 minutes for the live site to update. Continue?")) return;
+
         setLoading(true);
-        setLogs(prev => [...prev, "Starting deployment to GitHub..."]);
+        setLogs(prev => [...prev, "🚀 Starting deployment (Git Push)..."]);
 
         try {
             const res = await fetch('/api/deploy', { method: 'POST' });
             const data = await res.json();
 
             if (res.ok) {
-                setLogs(prev => [...prev, `Success: ${data.message}`]);
+                setLogs(prev => [...prev, `✅ Success: Pushed to GitHub.`]);
+                setLogs(prev => [...prev, `👉 The live site will update in ~2 minutes.`]);
+                setLogs(prev => [...prev, `🔗 Check here: https://exsicinearch.netlify.app`]); // Replace with actual URL if known
+                alert("Deployment started! Your changes will appear on the website in about 2 minutes.");
                 if (data.details) setLogs(prev => [...prev, `Details: ${data.details}`]);
             } else {
-                setLogs(prev => [...prev, `Error: ${data.error}`]);
+                setLogs(prev => [...prev, `❌ Error: ${data.error}`]);
+                alert(`Deployment failed: ${data.error}`);
                 if (data.details) setLogs(prev => [...prev, `Details: ${data.details}`]);
             }
         } catch (error: any) {
             setLogs(prev => [...prev, `Network Error: ${error.message}`]);
+            alert("Network error occurred.");
         } finally {
             setLoading(false);
         }
@@ -108,66 +115,73 @@ export default function AdminPage() {
                 Admin Dashboard
             </h1>
 
-            <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-2xl">
-                <h2 className="text-xl font-semibold mb-4">Content Generation</h2>
-                <p className="text-gray-400 mb-6">
-                    Manage your movie archive automation.
-                </p>
-
-                <div className="flex flex-wrap gap-4">
-                    <button
-                        onClick={handleSync}
-                        disabled={loading}
-                        className={`px-6 py-3 rounded-md font-medium transition-colors ${loading
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : 'bg-green-600 hover:bg-green-700 text-white'
-                            }`}
-                    >
-                        Sync Local Files (source_md)
-                    </button>
-
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-3xl">
+                <h2 className="text-xl font-semibold mb-4">Content Controls</h2>
+                <div className="flex flex-wrap gap-4 mb-8">
                     <button
                         onClick={handleGenerate}
                         disabled={loading}
-                        className={`px-6 py-3 rounded-md font-medium transition-colors ${loading
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        className={`px-6 py-3 rounded-md font-medium transition-colors border border-blue-500/30 ${loading
+                            ? 'bg-gray-700 cursor-not-allowed text-gray-400'
+                            : 'bg-blue-600/20 hover:bg-blue-600 text-blue-100 hover:text-white'
                             }`}
                     >
-                        {loading ? 'Processing...' : 'Start Generation'}
+                        1. Start Generation
+                    </button>
+
+                    <button
+                        onClick={handleSync}
+                        disabled={loading}
+                        className={`px-6 py-3 rounded-md font-medium transition-colors border border-green-500/30 ${loading
+                            ? 'bg-gray-700 cursor-not-allowed text-gray-400'
+                            : 'bg-green-600/20 hover:bg-green-600 text-green-100 hover:text-white'
+                            }`}
+                    >
+                        2. Sync Local Files
                     </button>
 
                     <button
                         onClick={handleClear}
                         disabled={loading}
-                        className={`px-6 py-3 rounded-md font-medium transition-colors ${loading
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : 'bg-red-600 hover:bg-red-700 text-white'
+                        className={`px-6 py-3 rounded-md font-medium transition-colors border border-red-500/30 ${loading
+                            ? 'bg-gray-700 cursor-not-allowed text-gray-400'
+                            : 'bg-red-600/20 hover:bg-red-600 text-red-100 hover:text-white'
                             }`}
                     >
-                        Clear Database
+                        Reset Database
+                    </button>
+                </div>
+
+                <h2 className="text-xl font-semibold mb-4">Deployment</h2>
+                <div className="flex flex-wrap gap-4">
+                    <button
+                        onClick={handleDeploy}
+                        disabled={loading}
+                        className={`px-8 py-4 rounded-md font-bold text-lg shadow-lg transition-all transform hover:scale-105 ${loading
+                            ? 'bg-gray-600 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white ring-2 ring-purple-400/50'
+                            }`}
+                    >
+                        웹페이지에 반영하기 (Latest Deploy)
                     </button>
 
                     <button
                         onClick={handleDeploy}
                         disabled={loading}
-                        className={`px-6 py-3 rounded-md font-medium transition-colors ${loading
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : 'bg-purple-600 hover:bg-purple-700 text-white'
-                            }`}
+                        className="px-4 py-2 text-sm text-gray-400 hover:text-white underline"
                     >
-                        Deploy to GitHub
+                        (Legacy) Deploy to GitHub
                     </button>
                 </div>
 
                 <div className="mt-8">
-                    <h3 className="text-lg font-medium mb-2">Logs</h3>
-                    <div className="bg-black p-4 rounded border border-gray-700 h-64 overflow-y-auto font-mono text-sm text-green-400">
+                    <h3 className="text-lg font-medium mb-2">System Logs</h3>
+                    <div className="bg-black p-4 rounded border border-gray-700 h-64 overflow-y-auto font-mono text-sm text-green-400 shadow-inner">
                         {logs.length === 0 ? (
-                            <span className="text-gray-600">Waiting for action...</span>
+                            <span className="text-gray-600 opacity-50">Ready. Logs will appear here...</span>
                         ) : (
                             logs.map((log, i) => (
-                                <div key={i} className="mb-1">{log}</div>
+                                <div key={i} className="mb-1 border-b border-gray-800/50 pb-1">{log}</div>
                             ))
                         )}
                     </div>
