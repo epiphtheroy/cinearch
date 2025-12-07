@@ -33,7 +33,7 @@ function getAdminDb() {
 
 const WATCH_DIR = path.join(process.cwd(), 'source_md');
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
-const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+?)_?\[(?<catId>\d+)\](?<catTitle>.+)\.md$/;
+const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+?)_\[(?<catTitle>.+)\]\.md$/;
 
 export async function POST() {
     try {
@@ -59,9 +59,13 @@ export async function POST() {
                 continue;
             }
 
-            const { movieId, movieTitle, catId, catTitle } = match.groups!;
+            const { movieId, movieTitle, catTitle } = match.groups!;
+            // Enforce uppercase for consistency
+            const categoryNameUpper = catTitle.toUpperCase();
+
             const docId = `movie_${movieId}`;
-            const articleId = `article_${movieId}_${catId}`;
+            // New Article ID format: article_MOVIEID_CATEGORYNAME
+            const articleId = `article_${movieId}_${categoryNameUpper}`;
             const filePath = path.join(WATCH_DIR, file);
 
             try {
@@ -77,7 +81,7 @@ export async function POST() {
                         const tmdbRes = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}`, {
                             params: {
                                 api_key: TMDB_API_KEY,
-                                language: 'ko-KR'
+                                language: 'en-US'
                             }
                         });
 
@@ -116,8 +120,8 @@ export async function POST() {
                     movieIdStr: movieId,
                     movieTitle: frontmatter.movieTitle || movieTitle,
                     title: frontmatter.title || 'Untitled', // Specific article title
-                    categoryId: parseInt(catId),
-                    categoryName: frontmatter.categoryName || catTitle,
+                    // categoryId removed
+                    categoryName: (frontmatter.categoryName || categoryNameUpper).toUpperCase(),
                     content: content.trim(),
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });

@@ -5,7 +5,7 @@ import RatingComponent from './RatingComponent';
 
 interface Article {
     id: string;
-    categoryId: number;
+    // categoryId removed
     categoryName: string;
 }
 
@@ -41,7 +41,7 @@ export default function Sidebar({ articles, selectedArticleId, onSelect, movie }
                                         : "text-gray-400 hover:bg-gray-800 hover:text-white"
                                 )}
                             >
-                                <span className="mr-2 opacity-50">#{article.categoryId}</span>
+                                {/* Removed categoryId display */}
                                 {article.categoryName}
                             </button>
                         </li>

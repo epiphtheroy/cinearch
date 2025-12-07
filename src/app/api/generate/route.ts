@@ -32,7 +32,7 @@ export async function POST(_request: Request) {
                         const tmdbRes = await axios.get(`https://api.themoviedb.org/3/movie/${item.tmdbId}`, {
                             params: {
                                 api_key: TMDB_API_KEY,
-                                language: 'ko-KR'
+                                language: 'en-US'
                             }
                         });
                         if (tmdbRes.data && tmdbRes.data.title) {
@@ -72,14 +72,14 @@ export async function POST(_request: Request) {
                     const generatedMarkdown = await generateMovieContent(movieTitle, promptContent);
 
                     // 3. Save File
-                    // Format: [movieId]Title_[catId]Category.md
+                    // Format: [movieId]Title_[CATEGORY].md
                     // Use the ID from the sheet as the movieId in filename
                     const movieId = item.tmdbId;
-                    const catId = item.status === '2' ? "20" : "10"; // Distinguish batch generated? or just use 10? User didn't specify. Let's use 10 for consistency or 20 for batch. 
-                    // User said "implying category". I'll use "10" as before unless requested.
-                    const catTitle = sanitizeFilename(catName);
+                    // catId is removed as per user request
+                    const catNameUpper = catName.toUpperCase();
+                    const catTitle = sanitizeFilename(catNameUpper);
 
-                    const filename = `[${movieId}]${sanitizeFilename(movieTitle)}_[${catId}]${catTitle}.md`;
+                    const filename = `[${movieId}]${sanitizeFilename(movieTitle)}_[${catTitle}].md`;
                     const outputPath = path.join(process.cwd(), 'source_md', filename);
 
                     // Ensure directory exists
@@ -91,8 +91,7 @@ export async function POST(_request: Request) {
                     const frontmatter = `---
 movieId: ${movieId}
 movieTitle: ${movieTitle}
-categoryId: ${catId}
-categoryName: ${catName}
+categoryName: ${catNameUpper}
 ---
 
 `;

@@ -6,8 +6,8 @@ import MarkdownViewer from './MarkdownViewer';
 import { Menu, X } from 'lucide-react';
 
 export default function SplitView({ movie, articles }: { movie: any, articles: any[] }) {
-    // Sort articles by categoryId
-    const sortedArticles = [...articles].sort((a, b) => a.categoryId - b.categoryId);
+    // Sort articles by categoryName (Alphabetical)
+    const sortedArticles = [...articles].sort((a, b) => (a.categoryName || '').localeCompare(b.categoryName || ''));
 
     const [selectedArticleId, setSelectedArticleId] = useState<string | null>(
         sortedArticles.length > 0 ? sortedArticles[0].id : null
