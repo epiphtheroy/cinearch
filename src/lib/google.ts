@@ -21,17 +21,18 @@ export interface MovieQueueItem {
 
 // Configuration
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
-// Column indices (0-based)
-const COL_TMDB_ID = 0; // Was COL_TITLE
-const COL_STATUS = 1;
-const COL_CATEGORY = 2; // Changed from COL_PROMPT
+// Column indices (0-based) based on: TMDB_ID | Movie Title | Status | Category
+const COL_TMDB_ID = 0;
+const COL_TITLE_IGNORED = 1; // Just for reference in sheet
+const COL_STATUS = 2; // Column C
+const COL_CATEGORY = 3; // Column D
 
 export async function getMovieQueue(): Promise<MovieQueueItem[]> {
     if (!SPREADSHEET_ID) throw new Error("GOOGLE_SHEET_ID not set");
 
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
-        range: 'Sheet1!A2:C100', // Adjust range as needed
+        range: 'Sheet1!A2:D100', // Expanded range to include Col D
     });
 
     const rows = response.data.values;
@@ -39,7 +40,7 @@ export async function getMovieQueue(): Promise<MovieQueueItem[]> {
 
     const queue: MovieQueueItem[] = [];
     rows.forEach((row, index) => {
-        const tmdbId = row[COL_TMDB_ID]?.toString().trim(); // Ensure string
+        const tmdbId = row[COL_TMDB_ID]?.toString().trim();
         const status = row[COL_STATUS];
         const category = row[COL_CATEGORY];
 
@@ -78,7 +79,7 @@ export async function updateRowStatus(rowIndex: number, newStatus: string) {
 
     await sheets.spreadsheets.values.update({
         spreadsheetId: SPREADSHEET_ID,
-        range: `Sheet1!B${rowIndex}`, // Assuming Status is Column B
+        range: `Sheet1!C${rowIndex}`, // Status is now Column C
         valueInputOption: 'RAW',
         requestBody: {
             values: [[newStatus]]
