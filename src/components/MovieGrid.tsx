@@ -117,9 +117,9 @@ export default function MovieGrid({ initialMovies }: { initialMovies: any[] }) {
 
                             return (
                                 <section key={letter} id={`section-${letter}`} className="scroll-mt-48">
-                                    <div className="flex items-baseline gap-6 mb-12 border-b border-zinc-900 pb-4">
-                                        <h2 className="text-8xl font-serif text-white/10 font-medium leading-none">{letter}</h2>
-                                        <span className="text-xs text-zinc-600 font-mono tracking-widest">{movies.length} TITLES</span>
+                                    <div className="flex items-baseline gap-4 mb-6 border-b border-zinc-200 pb-2">
+                                        <h2 className="text-4xl font-serif text-zinc-300 font-light">{letter}</h2>
+                                        <span className="text-xs text-zinc-500 font-mono">{movies.length} items</span>
                                     </div>
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-16">
@@ -141,7 +141,7 @@ function MovieCard({ movie }: { movie: Movie }) {
     return (
         <Link href={`/movie/${movie.id}`} className="group block">
             {/* Poster */}
-            <div className="relative aspect-[2/3] bg-[#0f0f0f] overflow-hidden mb-5 opacity-90 group-hover:opacity-100 transition-all duration-300 border border-transparent group-hover:border-white/20 group-hover:shadow-[0_0_20px_rgba(139,92,246,0.1)] group-hover:-translate-y-1">
+            <div className="relative aspect-[2/3] bg-zinc-200 overflow-hidden mb-3 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300">
                 {movie.metadata?.posterUrl ? (
                     <Image
                         src={movie.metadata.posterUrl}
@@ -150,20 +150,20 @@ function MovieCard({ movie }: { movie: Movie }) {
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                 ) : (
-                    <div className="flex items-center justify-center h-full text-zinc-800 text-xs">
+                    <div className="flex items-center justify-center h-full text-zinc-400 text-xs">
                         NO IMAGE
                     </div>
                 )}
             </div>
 
             {/* Info */}
-            <div className="space-y-1.5 px-1">
-                <h3 className="text-sm font-medium text-zinc-300 group-hover:text-white truncate transition-colors font-serif tracking-tight leading-snug">
+            <div className="space-y-1">
+                <h3 className="text-sm font-bold text-black group-hover:text-[#d40000] truncate transition-colors">
                     {movie.title}
                 </h3>
-                <div className="flex items-center gap-3 text-[10px] text-zinc-600 uppercase tracking-widest font-mono">
-                    <span>{movie.metadata?.year || '????'}</span>
-                    <span className="w-1 h-1 rounded-full bg-zinc-800"></span>
+                <div className="flex items-center gap-2 text-[10px] text-zinc-500 uppercase tracking-wider">
+                    <span>{movie.metadata?.year}</span>
+                    <span>•</span>
                     <span className="truncate max-w-[100px]">{movie.metadata?.director}</span>
                 </div>
             </div>

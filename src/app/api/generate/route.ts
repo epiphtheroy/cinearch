@@ -53,42 +53,43 @@ export async function POST(_request: Request) {
                 console.log(`Processing Row ${item.rowIndex} (ID: ${item.tmdbId}). Mode: ${item.status === '2' ? 'Batch' : 'Single'}. Categories: ${targetCategories.length}`);
 
                 for (const catName of targetCategories) {
-                    // 1. Get Prompt Doc ID
-                    const promptDocId = PROMPT_MAP[catName];
+                    try {
+                        // 1. Get Prompt Doc ID
+                        const promptDocId = PROMPT_MAP[catName];
 
-                    if (!promptDocId) {
-                        console.warn(`[Batch] Skipping category '${catName}' - No Doc ID configured.`);
-                        continue;
-                    }
+                        if (!promptDocId) {
+                            console.warn(`[Batch] Skipping category '${catName}' - No Doc ID configured.`);
+                            continue;
+                        }
 
-                    // Delay for 3 seconds if Batch mode (to avoid rate limits or overwhelm)
-                    if (item.status === '2') {
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                    }
+                        // Delay for 10 seconds if Batch mode (to avoid rate limits or overwhelm)
+                        if (item.status === '2') {
+                            await new Promise(resolve => setTimeout(resolve, 10000));
+                        }
 
-                    const promptContent = await getPromptContent(promptDocId);
+                        const promptContent = await getPromptContent(promptDocId);
 
-                    // 2. Generate Content
-                    const generatedMarkdown = await generateMovieContent(movieTitle, promptContent);
+                        // 2. Generate Content
+                        const generatedMarkdown = await generateMovieContent(movieTitle, promptContent);
 
-                    // 3. Save File
-                    // Format: [movieId]Title_[CATEGORY].md
-                    // Use the ID from the sheet as the movieId in filename
-                    const movieId = item.tmdbId;
-                    // catId is removed as per user request
-                    const catNameUpper = catName.toUpperCase();
-                    const catTitle = sanitizeFilename(catNameUpper);
+                        // 3. Save File
+                        // Format: [movieId]Title_[CATEGORY].md
+                        // Use the ID from the sheet as the movieId in filename
+                        const movieId = item.tmdbId;
+                        // catId is removed as per user request
+                        const catNameUpper = catName.toUpperCase();
+                        const catTitle = sanitizeFilename(catNameUpper);
 
-                    const filename = `[${movieId}]${sanitizeFilename(movieTitle)}_[${catTitle}].md`;
-                    const outputPath = path.join(process.cwd(), 'source_md', filename);
+                        const filename = `[${movieId}]${sanitizeFilename(movieTitle)}_[${catTitle}].md`;
+                        const outputPath = path.join(process.cwd(), 'source_md', filename);
 
-                    // Ensure directory exists
-                    if (!fs.existsSync(path.dirname(outputPath))) {
-                        fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-                    }
+                        // Ensure directory exists
+                        if (!fs.existsSync(path.dirname(outputPath))) {
+                            fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+                        }
 
-                    // Prepend Frontmatter
-                    const frontmatter = `---
+                        // Prepend Frontmatter
+                        const frontmatter = `---
 movieId: ${movieId}
 movieTitle: ${movieTitle}
 categoryName: ${catNameUpper}
@@ -96,8 +97,13 @@ categoryName: ${catNameUpper}
 
 `;
 
-                    fs.writeFileSync(outputPath, frontmatter + generatedMarkdown);
-                    results.push({ title: movieTitle, category: catName, status: 'Success', file: filename });
+                        fs.writeFileSync(outputPath, frontmatter + generatedMarkdown);
+                        results.push({ title: movieTitle, category: catName, status: 'Success', file: filename });
+                    } catch (catError: any) {
+                        console.error(`[Batch Error] Failed category '${catName}' for movie '${movieTitle}':`, catError.message);
+                        results.push({ title: movieTitle, category: catName, status: 'Skipped', error: catError.message });
+                        // Continue to next category
+                    }
                 }
 
                 // 4. Update Status
