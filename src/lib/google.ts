@@ -14,7 +14,7 @@ const docs = google.docs({ version: 'v1', auth });
 
 export interface MovieQueueItem {
     rowIndex: number; // 0-indexed, including header
-    movieTitle: string;
+    tmdbId: string;   // Changed from movieTitle
     status: string;
     promptDocId?: string; // Optional if we want to override per row
 }
@@ -22,7 +22,7 @@ export interface MovieQueueItem {
 // Configuration
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
 // Column indices (0-based)
-const COL_TITLE = 0;
+const COL_TMDB_ID = 0; // Was COL_TITLE
 const COL_STATUS = 1;
 const COL_CATEGORY = 2; // Changed from COL_PROMPT
 
@@ -39,15 +39,15 @@ export async function getMovieQueue(): Promise<MovieQueueItem[]> {
 
     const queue: MovieQueueItem[] = [];
     rows.forEach((row, index) => {
-        const title = row[COL_TITLE];
+        const tmdbId = row[COL_TMDB_ID]?.toString().trim(); // Ensure string
         const status = row[COL_STATUS];
         const category = row[COL_CATEGORY];
 
-        // Check if status is '1' (Ready)
-        if (title && status === '1') {
+        // Check if status is '1' (Ready) and we have an ID
+        if (tmdbId && status === '1') {
             queue.push({
                 rowIndex: index + 2, // +2 because 1-based and header row
-                movieTitle: title,
+                tmdbId: tmdbId,
                 status: status,
                 promptDocId: category // We temporarily store category name here, will map later
             });
