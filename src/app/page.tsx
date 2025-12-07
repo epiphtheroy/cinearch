@@ -1,7 +1,6 @@
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query } from 'firebase/firestore';
 import MovieGrid from '@/components/MovieGrid';
-import GlobalNav from '@/components/GlobalNav';
 
 export const dynamic = 'force-dynamic';
 
