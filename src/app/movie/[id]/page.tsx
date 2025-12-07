@@ -58,9 +58,10 @@ async function getArticles(movieId: string) {
             const { movieId: _movieId, ...serializableData } = data;
             return {
                 id: doc.id,
-                title: data.title || 'Untitled Article',
+                title: data.title || data.movieTitle || 'Untitled Article',
                 content: data.content || '',
-                categoryTitle: data.categoryTitle || data.category || 'General',
+                // Map 'categoryName' from DB to 'categoryTitle' for UI
+                categoryTitle: data.categoryName || data.categoryTitle || data.category || 'General',
                 ...serializableData,
                 updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt || null
             };

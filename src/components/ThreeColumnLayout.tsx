@@ -84,7 +84,7 @@ export default function ThreeColumnLayout({ movie, articles }: ThreeColumnLayout
             {/* Column 2: Article Navigation (Sticky Center) */}
             <nav className="w-full md:w-[20%] lg:w-[15%] md:h-screen sticky top-0 border-r border-glass-border bg-black/20 md:overflow-y-auto hide-scrollbar z-10">
                 <div className="p-6 md:pt-20">
-                    <h3 className="text-xs font-bold text-zinc-600 uppercase tracking-widest mb-6 px-3">Index</h3>
+                    <h3 className="text-xs font-bold text-zinc-600 uppercase tracking-widest mb-6 px-3">Category</h3>
                     <ul className="space-y-1">
                         {articles.map((article) => (
                             <li key={article.id}>
