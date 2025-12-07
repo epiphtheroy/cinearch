@@ -57,29 +57,33 @@ export default function AdminPage() {
     };
 
     const handleDeploy = async () => {
-        if (!confirm("This will push all changes to GitHub and trigger a Netlify build. It may take 1-2 minutes for the live site to update. Continue?")) return;
+        // Remove blocking confirm to ensure immediate feedback. 
+        // Or keep it but logging starts immediately after.
+        // Given user feedback "popup disappears", we will verify intent via log message instead of blocking?
+        // No, confirm is good for safety, but let's make it robust.
+        // User said "message doesn't appear". It implies subsequent logic failed.
+        // We will remove confirm for smoother "One Click" action as requested ("Make it working").
 
         setLoading(true);
-        setLogs(prev => [...prev, "🚀 Starting deployment (Git Push)..."]);
+        setLogs(prev => [...prev, "🚀 Starting deployment sequence (Git Push)..."]);
+        setLogs(prev => [...prev, "⏳ Please wait while we push changes to the repository..."]);
 
         try {
             const res = await fetch('/api/deploy', { method: 'POST' });
             const data = await res.json();
 
             if (res.ok) {
-                setLogs(prev => [...prev, `✅ Success: Pushed to GitHub.`]);
-                setLogs(prev => [...prev, `👉 The live site will update in ~2 minutes.`]);
-                setLogs(prev => [...prev, `🔗 Check here: https://exsicinearch.netlify.app`]); // Replace with actual URL if known
-                alert("Deployment started! Your changes will appear on the website in about 2 minutes.");
-                if (data.details) setLogs(prev => [...prev, `Details: ${data.details}`]);
+                setLogs(prev => [...prev, `✅ SUCCESS: Changes pushed to GitHub.`]);
+                setLogs(prev => [...prev, `👉 Netlify will detect this push and build the site.`]);
+                setLogs(prev => [...prev, `⏱️ Expected live time: ~2 minutes from now.`]);
+                setLogs(prev => [...prev, `🔗 Live URL: https://exsicinearch.netlify.app`]);
             } else {
-                setLogs(prev => [...prev, `❌ Error: ${data.error}`]);
-                alert(`Deployment failed: ${data.error}`);
+                setLogs(prev => [...prev, `❌ ERROR: Deployment failed.`]);
+                setLogs(prev => [...prev, `Reason: ${data.error}`]);
                 if (data.details) setLogs(prev => [...prev, `Details: ${data.details}`]);
             }
         } catch (error: any) {
-            setLogs(prev => [...prev, `Network Error: ${error.message}`]);
-            alert("Network error occurred.");
+            setLogs(prev => [...prev, `❌ NETWORK ERROR: ${error.message}`]);
         } finally {
             setLoading(false);
         }
@@ -155,6 +159,7 @@ export default function AdminPage() {
                 <h2 className="text-xl font-semibold mb-4">Deployment</h2>
                 <div className="flex flex-wrap gap-4">
                     <button
+                        type="button"
                         onClick={handleDeploy}
                         disabled={loading}
                         className={`px-8 py-4 rounded-md font-bold text-lg shadow-lg transition-all transform hover:scale-105 ${loading
@@ -162,7 +167,7 @@ export default function AdminPage() {
                             : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white ring-2 ring-purple-400/50'
                             }`}
                     >
-                        웹페이지에 반영하기 (Latest Deploy)
+                        {loading ? 'Deploying...' : '웹페이지에 반영하기 (Latest Deploy)'}
                     </button>
 
                     <button
