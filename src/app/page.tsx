@@ -28,8 +28,7 @@ export default async function Home() {
     const movies = await getMovies();
 
     return (
-        <main className="min-h-screen bg-background text-foreground pt-20">
-            <GlobalNav />
+        <main className="min-h-screen p-8 bg-gray-900 text-white">
             <MovieGrid initialMovies={movies} />
         </main>
     )
