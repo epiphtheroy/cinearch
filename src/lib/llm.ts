@@ -36,8 +36,8 @@ function getConfig(categoryName: string): categoryConfig {
 
         // Fallback to Google if not found
         return { provider: 'Google', model: 'gemini-1.5-pro-latest' };
-    } catch (e) {
-        console.warn("Failed to read AI config from .env.local, using default:", e);
+    } catch (_e) {
+        console.warn("Failed to read AI config from .env.local, using default:", _e);
         return { provider: 'Google', model: 'gemini-1.5-pro-latest' };
     }
 }

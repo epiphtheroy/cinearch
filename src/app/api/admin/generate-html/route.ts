@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { generateMovieContent, generateCustomContent } from '@/lib/llm'; // Reusing existing LLM wrapper
+import { generateCustomContent } from '@/lib/llm'; // Reusing existing LLM wrapper
 import matter from 'gray-matter';
 // ... existing imports
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
         }
 
         const fileContent = fs.readFileSync(filePath, 'utf-8');
-        const { content, data: frontmatter } = matter(fileContent);
+        const { content } = matter(fileContent);
 
         // 2. Parse ID for Output Filename
         // Regex to match [ID]Title_[CatID]Category
