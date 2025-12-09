@@ -13,8 +13,8 @@ async function getMovies() {
 
         querySnapshot.docs.forEach(doc => {
             const title = doc.data().title || 'Untitled';
-            if (!uniqueMoviesMap.has(title)) {
-                uniqueMoviesMap.set(title, {
+            if (!uniqueMoviesMap.has(doc.id)) {
+                uniqueMoviesMap.set(doc.id, {
                     id: doc.id,
                     title
                 });

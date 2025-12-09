@@ -17,8 +17,8 @@ async function getMovies() {
             const data = doc.data();
             const title = data.title;
 
-            if (!uniqueMoviesMap.has(title)) {
-                uniqueMoviesMap.set(title, {
+            if (!uniqueMoviesMap.has(doc.id)) {
+                uniqueMoviesMap.set(doc.id, {
                     id: doc.id,
                     ...data,
                     updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt || null
