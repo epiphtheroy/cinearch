@@ -14,7 +14,7 @@ export default function GeneratorPage() {
     const [logs, setLogs] = useState<string[]>([]);
 
     const MODELS: Record<Provider, string[]> = {
-        'xAI': ['grok-4-1-fast-reasoning', 'grok-beta', 'grok-2-vision-1212'],
+        'xAI': ['grok-4-1-fast-reasoning', 'grok-4-0709', 'grok-beta', 'grok-2-vision-1212'],
         'Google': ['gemini-1.5-pro-latest', 'gemini-1.5-flash', 'gemini-1.0-pro']
     };
 
@@ -129,15 +129,31 @@ export default function GeneratorPage() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-400 mb-2">Model</label>
-                                <select
-                                    className="w-full bg-black border border-gray-700 rounded-md p-3 text-white outline-none"
-                                    value={model}
-                                    onChange={(e) => setModel(e.target.value)}
-                                >
-                                    {MODELS[provider].map((m: string) => (
-                                        <option key={m} value={m}>{m}</option>
-                                    ))}
-                                </select>
+                                <div className="flex gap-2">
+                                    <select
+                                        className="flex-1 bg-black border border-gray-700 rounded-md p-3 text-white outline-none"
+                                        value={MODELS[provider].includes(model) ? model : 'custom'}
+                                        onChange={(e) => {
+                                            if (e.target.value === 'custom') {
+                                                setModel(''); // Clear for typing
+                                            } else {
+                                                setModel(e.target.value);
+                                            }
+                                        }}
+                                    >
+                                        {MODELS[provider].map((m: string) => (
+                                            <option key={m} value={m}>{m}</option>
+                                        ))}
+                                        <option value="custom">Custom / Manual Input</option>
+                                    </select>
+                                    {/* Let's adjust the logic slightly. 
+                                        We will control the input value. If user picks a preset, it fills.
+                                        If user wants custom, they can type.
+                                        
+                                        BETTER GENERIC APPROACH:
+                                        Toggle between "Preset" and "Custom".
+                                    */}
+                                </div>
                             </div>
                         </div>
 

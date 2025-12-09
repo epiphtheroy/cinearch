@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time of the Wolf: Forging Meaning in the Void</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.7;
+      color: #e8e8e8;
+      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    /* Hero Video Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 4rem;
+      position: relative;
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2);
+      animation: heroPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes heroPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+      50% { transform: scale(1.02); box-shadow: 0 30px 80px rgba(75,0,130,0.4); }
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 12px;
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      font-weight: 300;
+      margin-top: 2rem;
+      background: linear-gradient(45deg, #ffffff, #ffd700, #ffffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px rgba(255,215,0,0.5);
+      animation: titleGlow 3s ease-in-out infinite alternate;
+      letter-spacing: 0.05em;
+    }
+
+    @keyframes titleGlow {
+      from { filter: drop-shadow(0 0 10px #ffd700); }
+      to { filter: drop-shadow(0 0 20px #ffd700) drop-shadow(0 0 30px #ff4500); }
+    }
+
+    .hero-subtitle {
+      font-size: 1.3rem;
+      color: #b0b0b0;
+      margin-top: 1rem;
+      font-weight: 300;
+    }
+
+    /* Content Sections */
+    .content {
+      display: grid;
+      gap: 4rem;
+    }
+
+    .section {
+      opacity: 0;
+      transform: translateY(40px);
+      animation: fadeInUp 1.2s ease-out forwards;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 2.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+      transition: all 0.4s ease;
+    }
+
+    .section:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 30px rgba(255,215,0,0.2);
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section:nth-child(1) { animation-delay: 0.2s; }
+    .section:nth-child(2) { animation-delay: 0.4s; }
+    .section:nth-child(3) { animation-delay: 0.6s; }
+    .section:nth-child(4) { animation-delay: 0.8s; }
+    .section:nth-child(5) { animation-delay: 1s; }
+
+    h2 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #ffd700, #ffffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      display: inline-block;
+    }
+
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #ffd700, transparent);
+      border-radius: 2px;
+    }
+
+    p {
+      margin-bottom: 1.2rem;
+      font-size: 1.1rem;
+    }
+
+    strong {
+      color: #ffd700;
+      font-weight: 600;
+    }
+
+    em {
+      font-style: italic;
+      color: #d4af37;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    ul li {
+      position: relative;
+      padding-left: 2rem;
+      margin-bottom: 1rem;
+      font-size: 1.05rem;
+    }
+
+    ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: #ffd700;
+      font-size: 1.2rem;
+      animation: bulletPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes bulletPulse {
+      0%, 100% { opacity: 0.7; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem 0.5rem;
+      }
+
+      .section {
+        padding: 1.5rem;
+      }
+
+      .hero-title {
+        margin-top: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .section {
+        padding: 1rem;
+        margin: 0 0.5rem;
+      }
+    }
+
+    /* Scroll indicator */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(#ffd700, #ff8c00);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div class="video-wrapper">
+        <iframe 
+          src="https://www.youtube.com/embed/cJUxjnErFUU?rel=0&modestbranding=1&autoplay=0&controls=1&showinfo=0&fs=1&iv_load_policy=3"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+      <h1 class="hero-title">Time of the Wolf</h1>
+      <p class="hero-subtitle">Forging Meaning Amid Oblivion</p>
+    </section>
+
+    <main class="content">
+      <section class="section">
+        <h2>The Reveal</h2>
+        <p>In the shadowy aftermath of societal collapse depicted in Michael Haneke's <em>Time of the Wolf</em> (2003), one might superficially liken the protagonist's stoic endurance to figures like Elon Musk's tech-driven survivalism, Joan of Arc's fervent leadership in turmoil, or Greta Thunberg's urgent environmental advocacy—yet these parallels, while intriguing, lack the profound existential depth that truly unlocks the film's essence. Instead, the most revelatory connection emerges between <strong>Anne</strong>, the beleaguered mother navigating a world stripped bare, and <strong>Viktor Frankl</strong>, the Austrian psychiatrist who endured Nazi concentration camps from 1942 to 1945, losing his family and emerging to found logotherapy, a psychology centered on discovering meaning in suffering. This pairing radically recontextualizes Haneke's austere narrative not as mere survival horror, but as a stark allegory for forging purpose amid oblivion, illuminating a broader truth: in an era of escalating global crises—from pandemics to climate upheavals—humanity's salvation lies not in resources, but in the defiant act of meaning-making.</p>
+      </section>
+
+      <section class="section">
+        <h2>Resilience Forged in Void</h2>
+        <p>It begins with loss. Both figures confront annihilation head-on.</p>
+        <ul>
+          <li>In the film's opening, Anne witnesses her husband's brutal murder and the torching of their home, a raw sequence shot in Haneke's unflinching long takes that emphasize isolation; similarly, Frankl arrived at Auschwitz in 1942, stripped of possessions and family, documenting in his 1946 book <em>Man's Search for Meaning</em> how such voids force a reevaluation of existence beyond material survival.</li>
+          <li>Anne's silent scavenging through abandoned landscapes mirrors Frankl's camp experiences, where he observed inmates sustaining themselves through inner visions—Frankl himself imagined lecturing on his theories post-liberation, much as Anne clings to familial bonds to impose order on chaos.</li>
+          <li>Haneke's use of natural light and minimal dialogue underscores Anne's internal fortitude, paralleling Frankl's logotherapy principle that attitude toward suffering defines one's fate; both reject victimhood, transforming passive endurance into active resistance against despair.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>Meaning Amid the Masses</h2>
+        <p>Crowds breed conformity. Yet individuality persists through choice.</p>
+        <ul>
+          <li>The film's refugee encampment scenes depict desperate bartering and fragile alliances, with Anne negotiating for her children's safety amid moral decay; Frankl, in Theresienstadt and later camps, noted how prisoners formed hierarchies, yet he advocated choosing one's response—evident in his 1945 liberation reflections where he chose forgiveness over bitterness, akin to Anne's quiet advocacy for communal ethics.</li>
+          <li>Haneke employs sound design—distant howls and whispers—to evoke existential dread, juxtaposed with Anne's protective gestures toward her son Ben; this echoes Frankl's observations of 1,500+ inmates per barrack, where he conducted secret therapy sessions, insisting that even in herds, personal meaning (like Anne's maternal purpose) prevents psychological collapse.</li>
+          <li>Both narratives critique societal breakdown: the film's ambiguous catastrophe implies ecological or wartime ruin, while Frankl's post-war writings on 1940s Europe warn of "existential vacuum" in modernity; Anne's arc, refusing to succumb to mob violence, embodies Frankl's thesis that meaning trumps circumstance, bridging cinema's abstraction to real-world resilience in crises like the 2020 global lockdowns.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>Echoes of the Eternal Search</h2>
+        <p>Hope defies entropy. Frankl's influence endures in therapies treating over 10 million worldwide.</p>
+        <ul>
+          <li>The film's climax, with Anne's family facing fire and uncertainty, parallels Frankl's 1945 march from Dachau, where he found purpose in aiding others; Haneke's elliptical editing leaves outcomes open, much as Frankl's logotherapy posits life's "provisional" nature demands ongoing meaning-creation.</li>
+          <li>Anne's gaze into the abyss—symbolized by the titular "wolf" time of predatory survival—resonates with Frankl's concept of "tragic optimism," turning suffering into growth; this comparison reveals Haneke's film as a cautionary mirror to contemporary fragilities, from refugee crises displacing 100 million in 2023 to personal traumas amplified by isolation.</li>
+        </ul>
+      </section>
+
+      <section class="section">
+        <h2>The Implication</h2>
+        <p>Here's the pitch: Imagine <em>Time of the Wolf</em> not as dystopian dread, but as Frankl's manifesto visualized—Anne's odyssey becomes a blueprint for transcending apocalypse through inner resolve, proving that meaning isn't discovered but invented in the ruins. This lens expands the film's relevance, urging us to view our fractured world through defiant purpose: in an age of perpetual uncertainty, we are all potential Frankls, crafting light from the wolf's shadow, lest we forfeit our humanity to the void.</p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

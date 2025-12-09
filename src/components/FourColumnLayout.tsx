@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import MarkdownViewer from './MarkdownViewer';
 import { clsx } from 'clsx';
@@ -39,6 +39,28 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
     const [activeArticleId, setActiveArticleId] = useState<string | null>(articles[0]?.id || null);
 
     const activeArticle = articles.find(a => a.id === activeArticleId);
+
+    const [hasVisual, setHasVisual] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!activeArticleId) {
+            setHasVisual(false);
+            return;
+        }
+
+        const checkVisual = async () => {
+            setHasVisual(false);
+            try {
+                const res = await fetch(`/generated_visuals/${activeArticleId}.html`, { method: 'HEAD' });
+                if (res.ok) {
+                    setHasVisual(true);
+                }
+            } catch (e) {
+                setHasVisual(false);
+            }
+        };
+        checkVisual();
+    }, [activeArticleId]);
 
     // Placeholder data for the new Media Column
     const relatedMedia = [
@@ -200,17 +222,15 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                 )}
             </main>
 
-            {/* --- COLUMN 4: Related Media (New, Independent Scroll) --- */}
-            {/* Increased width to ~25% (18% + 7%), Distinct styling */}
             {/* --- COLUMN 4: Generated Visuals / Related Media --- */}
             {/* Increased width to ~25% (18% + 7%), Distinct styling */}
             <aside className="w-full lg:w-[25%] h-screen overflow-hidden bg-gradient-to-b from-[#050505] to-black relative z-20">
                 {/* Gradient Border Left */}
                 <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-yellow-900 via-blue-900/50 to-red-900 opacity-80 z-10 pointer-events-none"></div>
 
-                {activeArticle ? (
+                {activeArticle && hasVisual ? (
                     <div className="w-full h-full relative group">
-                        {/* Try to load generated HTML */}
+                        {/* Valid Generated HTML Exists */}
                         <iframe
                             key={activeArticle.id}
                             src={`/generated_visuals/${activeArticle.id}.html`}
@@ -219,14 +239,6 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                         />
-
-                        {/* Overlay text if needed, or simple fallback if empty? 
-                            Since we can't easily detect 404 inside iframe without JS magic, 
-                            we assume the user will generate content. 
-                            If not, the iframe will show Next.js 404 page which is ugly.
-                            
-                            IMPROVEMENT: We use a small fetch to check existence.
-                        */}
                         <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                             <span className="text-[10px] text-zinc-500 bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-white/10">
                                 {activeArticle.id}
@@ -238,8 +250,8 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                         <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-8 sticky top-0 bg-[#050505]/95 backdrop-blur-sm py-4 z-10 border-b border-transparent">
                             <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-800 to-blue-800">Related Media</span>
                         </h3>
+                        {/* Placeholder/Default Content */}
                         <div className="space-y-8">
-                            {/* Placeholder Content Blocks */}
                             {relatedMedia.map((media, idx) => (
                                 <div key={idx} className="group cursor-pointer">
                                     <div className="aspect-video w-full bg-zinc-900 rounded-sm overflow-hidden relative border border-white/5 group-hover:border-white/10 transition-colors duration-300">
