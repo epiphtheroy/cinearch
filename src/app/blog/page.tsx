@@ -8,12 +8,18 @@ async function getArticles() {
     try {
         const q = query(collection(db, 'articles'), orderBy('updatedAt', 'desc'));
         const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            // Serialize Firestore timestamp
-            updatedAt: doc.data().updatedAt?.toDate?.().toISOString() || new Date().toISOString()
-        }));
+        return querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                title: data.title || 'Untitled',
+                movieTitle: data.movieTitle || '',
+                content: data.content || '',
+                categoryName: data.categoryName || 'Uncategorized',
+                movieIdStr: data.movieIdStr || '',
+                updatedAt: data.updatedAt?.toDate?.().toISOString() || new Date().toISOString()
+            };
+        });
     } catch (error) {
         console.error("Error fetching articles:", error);
         return [];
