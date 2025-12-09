@@ -18,6 +18,7 @@
 *.pem
 *.key
 firebase-admin-key.json
+src/config/ai-settings.json
 
 # debug
 npm-debug.log*
