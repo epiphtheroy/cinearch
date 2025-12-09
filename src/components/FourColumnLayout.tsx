@@ -52,7 +52,10 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
 
             {/* --- COLUMN 1: Movie Metadata (Sticky Left) --- */}
             {/* Added nuanced gradient: Black -> Very Dark Zinc */}
-            <aside className="w-full lg:w-[18%] h-screen overflow-y-auto border-r border-white/5 bg-gradient-to-b from-black to-zinc-950 p-6 flex flex-col gap-6 hide-scrollbar z-30 shrink-0">
+            <aside className="w-full lg:w-[18%] h-screen overflow-y-auto bg-gradient-to-b from-black to-zinc-950 p-6 flex flex-col gap-6 hide-scrollbar z-30 shrink-0 relative">
+                {/* Gradient Border Right */}
+                <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-red-900 via-yellow-900/50 to-blue-900 opacity-80"></div>
+
                 <Link href="/" className="text-xs text-zinc-500 hover:text-white mb-4 block transition-colors tracking-widest uppercase">
                     ← Archive
                 </Link>
@@ -89,11 +92,15 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
             </aside>
 
             {/* --- COLUMN 2: Navigation (Sticky) --- */}
-            {/* Lighter gradient than Col 1 to distinguish hierarchy */}
-            <nav className="w-full lg:w-[15%] h-screen overflow-y-auto border-r border-white/5 bg-gradient-to-b from-zinc-950 to-zinc-900/50 hide-scrollbar z-20 shrink-0">
-                <div className="p-6 pt-12">
+            {/* Reduced width to ~8% (approx half of 15%), Lighter gradient */}
+            <nav className="w-full lg:w-[8%] h-screen overflow-y-auto bg-gradient-to-b from-zinc-950 to-zinc-900/50 hide-scrollbar z-20 shrink-0 relative">
+                {/* Gradient Border Right */}
+                <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-blue-900 via-red-900/50 to-yellow-900 opacity-80"></div>
+
+                <div className="py-6 flex flex-col">
                     <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-6 px-3">Index</h3>
-                    <ul className="space-y-1">
+
+                    <ul className="space-y-1 w-full">
                         {BATCH_CATEGORIES.map((category) => {
                             const matchingArticle = articles.find(a =>
                                 (a.categoryTitle || '').toUpperCase() === category.toUpperCase()
@@ -106,23 +113,21 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                                     <button
                                         onClick={() => matchingArticle && setActiveArticleId(matchingArticle.id)}
                                         disabled={!hasContent}
+                                        title={category}
                                         className={clsx(
-                                            "w-full text-left px-3 py-2.5 text-xs transition-all duration-300 border-l-[1px] flex justify-between items-center group",
+                                            "w-full text-left px-3 py-2 text-xs transition-all duration-300 border-l-[2px] flex items-center gap-2 group relative",
                                             isActive
-                                                ? "border-purple-500 text-white bg-white/5"
+                                                ? "border-red-500 text-white bg-white/5"
                                                 : hasContent
-                                                    ? "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5 hover:border-zinc-700"
+                                                    ? "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
                                                     : "border-transparent text-zinc-700 cursor-default"
                                         )}
                                     >
-                                        <div className="flex items-center gap-3">
-                                            {/* Micro-dot indicator */}
-                                            <span className={clsx(
-                                                "w-1 h-1 rounded-full transition-all duration-300",
-                                                isActive ? "bg-purple-500 scale-125 shadow-[0_0_8px_rgba(168,85,247,0.5)]" : hasContent ? "bg-zinc-700 group-hover:bg-zinc-500" : "bg-transparent"
-                                            )} />
-                                            <span>{category}</span>
-                                        </div>
+                                        <div className={clsx(
+                                            "w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300",
+                                            isActive ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" : hasContent ? "bg-zinc-600 group-hover:bg-zinc-400" : "bg-transparent"
+                                        )} />
+                                        <span className={clsx("truncate", !hasContent && "opacity-50")}>{category}</span>
                                     </button>
                                 </li>
                             );
@@ -137,20 +142,19 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                                     <li key={article.id}>
                                         <button
                                             onClick={() => setActiveArticleId(article.id)}
+                                            title={article.title}
                                             className={clsx(
-                                                "w-full text-left px-3 py-2.5 text-xs transition-all duration-300 border-l-[1px] flex justify-between items-center group",
+                                                "w-full text-left px-3 py-2 text-xs transition-all duration-300 border-l-[2px] flex items-center gap-2 group relative",
                                                 isActive
-                                                    ? "border-purple-500 text-white bg-white/5"
-                                                    : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5 hover:border-zinc-700"
+                                                    ? "border-blue-500 text-white bg-white/5"
+                                                    : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
                                             )}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <span className={clsx(
-                                                    "w-1 h-1 rounded-full transition-all duration-300",
-                                                    isActive ? "bg-purple-500 scale-125 shadow-[0_0_8px_rgba(168,85,247,0.5)]" : "bg-zinc-700 group-hover:bg-zinc-500"
-                                                )} />
-                                                <span>{article.categoryTitle || article.title}</span>
-                                            </div>
+                                            <div className={clsx(
+                                                "w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300",
+                                                isActive ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" : "bg-zinc-600 group-hover:bg-zinc-400"
+                                            )} />
+                                            <span className="truncate">{article.categoryTitle || article.title}</span>
                                         </button>
                                     </li>
                                 )
@@ -164,13 +168,16 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
             {/* The "Paper" - darkest and cleanest for reading */}
             <main className="flex-1 h-screen overflow-y-auto bg-[#0a0a0a] relative flex flex-col">
                 {activeArticle ? (
-                    <div className="w-full max-w-3xl mx-auto px-12 py-20 min-h-full">
+                    <div className="w-full max-w-3xl mx-auto px-8 lg:px-16 py-20 min-h-full">
                         {/* Header */}
-                        <header className="mb-12 border-b border-white/5 pb-8">
-                            <span className="text-[9px] font-mono text-purple-500/70 mb-4 block uppercase tracking-[0.3em]">
+                        <header className="mb-12 pb-8 relative">
+                            {/* Decorative gradient line */}
+                            <div className="absolute bottom-[-1px] left-0 w-full h-[1px] bg-gradient-to-r from-red-900 via-yellow-900 to-blue-900 opacity-50"></div>
+
+                            <span className="text-[9px] font-mono text-zinc-500 mb-4 block uppercase tracking-[0.3em]">
                                 {activeArticle.categoryTitle || 'Entry'}
                             </span>
-                            <h2 className="text-4xl lg:text-5xl font-serif text-white/90 leading-tight tracking-tight">
+                            <h2 className="text-3xl lg:text-5xl font-serif text-white/90 leading-tight tracking-tight">
                                 {activeArticle.title}
                             </h2>
                         </header>
@@ -187,40 +194,44 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                     </div>
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center text-zinc-700 space-y-4">
-                        <p className="text-xs font-mono uppercase tracking-widest">Select an entry from the index</p>
+                        <p className="text-xs font-mono uppercase tracking-widest">Select an entry</p>
                     </div>
                 )}
             </main>
 
             {/* --- COLUMN 4: Related Media (New, Independent Scroll) --- */}
-            {/* Mirroring Column 1 in width, but distinct styling for media focus */}
-            <aside className="w-full lg:w-[18%] h-screen overflow-y-auto border-l border-white/5 bg-gradient-to-b from-[#050505] to-black hide-scrollbar shrink-0 z-20">
+            {/* Increased width to ~25% (18% + 7%), Distinct styling */}
+            <aside className="w-full lg:w-[25%] h-screen overflow-y-auto bg-gradient-to-b from-[#050505] to-black hide-scrollbar shrink-0 z-20 relative">
+                {/* Gradient Border Left */}
+                <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-yellow-900 via-blue-900/50 to-red-900 opacity-80 z-10"></div>
+
                 <div className="p-6">
-                    <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-8 sticky top-0 bg-[#050505]/95 backdrop-blur-sm py-4 z-10 border-b border-white/5">
-                        Related Media
+                    <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-8 sticky top-0 bg-[#050505]/95 backdrop-blur-sm py-4 z-10 border-b border-transparent">
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-800 to-blue-800">Related Media</span>
                     </h3>
 
                     <div className="space-y-8">
                         {/* Placeholder Content Blocks */}
                         {relatedMedia.map((media, idx) => (
                             <div key={idx} className="group cursor-pointer">
-                                <div className="aspect-video w-full bg-zinc-900 rounded-sm overflow-hidden relative border border-white/5 group-hover:border-purple-500/30 transition-colors duration-300">
+                                <div className="aspect-video w-full bg-zinc-900 rounded-sm overflow-hidden relative border border-white/5 group-hover:border-white/10 transition-colors duration-300">
                                     {/* Placeholder Visual */}
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         {media.type === 'video' ? (
-                                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-md group-hover:bg-purple-500/20 transition-colors">
+                                            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md group-hover:bg-red-900/20 group-hover:border-red-500/30 transition-all">
                                                 <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white/70 border-b-[6px] border-b-transparent ml-1"></div>
                                             </div>
                                         ) : (
-                                            <span className="text-zinc-700 text-[10px] font-mono">IMG</span>
+                                            <span className="text-zinc-800 text-[10px] font-mono group-hover:text-zinc-500 transition-colors">IMG</span>
                                         )}
                                     </div>
 
-                                    {/* Mock Image Background */}
-                                    <div className={`absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 opacity-50 group-hover:scale-105 transition-transform duration-700`} />
+                                    {/* Mock Image Background with vibrant subtle tint on hover */}
+                                    <div className={`absolute inset-0 bg-gradient-to-br from-zinc-900 to-black opacity-80 group-hover:opacity-60 transition-opacity duration-700`} />
                                 </div>
-                                <div className="mt-3">
-                                    <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider group-hover:text-zinc-300 transition-colors">
+                                <div className="mt-3 flex items-baseline gap-2">
+                                    <span className="w-1 h-1 rounded-full bg-zinc-800 group-hover:bg-blue-800 transition-colors"></span>
+                                    <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-wider group-hover:text-zinc-400 transition-colors">
                                         {media.caption}
                                     </p>
                                 </div>
@@ -229,9 +240,8 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
 
                         {/* More filler content to enable scrolling */}
                         {Array.from({ length: 5 }).map((_, i) => (
-                            <div key={`filler-${i}`} className="group cursor-pointer opacity-50 hover:opacity-100 transition-opacity">
-                                <div className="aspect-square w-full bg-zinc-900/30 rounded-sm border border-white/5 mb-2"></div>
-                                <div className="h-2 w-1/2 bg-zinc-900 rounded-full"></div>
+                            <div key={`filler-${i}`} className="group cursor-pointer opacity-30 hover:opacity-80 transition-opacity">
+                                <div className="aspect-square w-full bg-zinc-900/20 rounded-sm border border-white/5 mb-2 hover:border-yellow-900/30 transition-colors"></div>
                             </div>
                         ))}
                     </div>
