@@ -26,8 +26,8 @@ async function getDirector(tmdbId: string, apiKey: string): Promise<string> {
         });
         const director = res.data.crew.find((p: any) => p.job === 'Director');
         return director ? director.name : '';
-    } catch (_e) {
-        console.warn(`Failed to fetch director for ${tmdbId}`);
+    } catch (error) {
+        console.warn(`Failed to fetch director for ${tmdbId}`, error);
         return '';
     }
 }
