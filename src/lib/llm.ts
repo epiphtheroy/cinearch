@@ -14,15 +14,21 @@ interface AiSettings {
     [category: string]: categoryConfig;
 }
 
-const CONFIG_PATH = path.join(process.cwd(), 'src/config/ai-settings.json');
+const ENV_PATH = path.join(process.cwd(), '.env.local');
 
 // Helper to get config safely
 function getConfig(categoryName: string): categoryConfig {
     try {
-        if (!fs.existsSync(CONFIG_PATH)) return { provider: 'Google', model: 'gemini-1.5-pro-latest' };
+        if (!fs.existsSync(ENV_PATH)) return { provider: 'Google', model: 'gemini-1.5-pro-latest' };
 
-        const data = fs.readFileSync(CONFIG_PATH, 'utf-8');
-        const settings: AiSettings = JSON.parse(data);
+        const envContent = fs.readFileSync(ENV_PATH, 'utf-8');
+        const match = envContent.match(/^AI_SETTINGS_BASE64=(.+)$/m);
+
+        let settings: AiSettings = {};
+        if (match && match[1]) {
+            const jsonStr = Buffer.from(match[1], 'base64').toString('utf-8');
+            settings = JSON.parse(jsonStr);
+        }
 
         // Exact match or Uppercase match
         const config = settings[categoryName] || settings[categoryName.toUpperCase()];
@@ -31,7 +37,7 @@ function getConfig(categoryName: string): categoryConfig {
         // Fallback to Google if not found
         return { provider: 'Google', model: 'gemini-1.5-pro-latest' };
     } catch (e) {
-        console.warn("Failed to read AI config, using default:", e);
+        console.warn("Failed to read AI config from .env.local, using default:", e);
         return { provider: 'Google', model: 'gemini-1.5-pro-latest' };
     }
 }
