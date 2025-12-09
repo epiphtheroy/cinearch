@@ -42,11 +42,22 @@ function getConfig(categoryName: string): categoryConfig {
     }
 }
 
-// Helper: Scan settings for any valid xAI key
+// Helper: Scan settings for any valid xAI key (ENV or JSON)
 function getAnyXaiApiKey(): string | undefined {
     try {
         if (!fs.existsSync(ENV_PATH)) return undefined;
+        console.log("[LLM] Reading config from:", ENV_PATH);
         const envContent = fs.readFileSync(ENV_PATH, 'utf-8');
+
+        // 1. Check for direct XAI_API_KEY assignment in file (robust)
+        const directMatch = envContent.match(/^XAI_API_KEY\s*=\s*(.+)$/m);
+        if (directMatch && directMatch[1]) {
+            console.log("[LLM] Found direct XAI_API_KEY match");
+            return directMatch[1].trim().replace(/^["']|["']$/g, '');
+        }
+
+        // 2. Check inside AI_SETTINGS_BASE64
+        console.log("[LLM] Checking AI_SETTINGS_BASE64...");
         const match = envContent.match(/^AI_SETTINGS_BASE64=(.+)$/m);
         if (match && match[1]) {
             const jsonStr = Buffer.from(match[1], 'base64').toString('utf-8');

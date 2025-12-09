@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Curation YouTube Trailers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a0033 50%, #ff6b35 100%);
+            color: #f0f0f0;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, #ff6b35, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px #ff6b35); }
+            to { filter: drop-shadow(0 0 20px #4ecdc4); }
+        }
+        .video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .video-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transform: translateY(50px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        .video-card:nth-child(1) { animation-delay: 0.1s; }
+        .video-card:nth-child(2) { animation-delay: 0.2s; }
+        .video-card:nth-child(3) { animation-delay: 0.3s; }
+        .video-card:nth-child(4) { animation-delay: 0.4s; }
+        .video-card:nth-child(5) { animation-delay: 0.5s; }
+        .video-card:nth-child(6) { animation-delay: 0.6s; }
+        .video-card:nth-child(7) { animation-delay: 0.7s; }
+        .video-card:nth-child(8) { animation-delay: 0.8s; }
+        .video-card:nth-child(9) { animation-delay: 0.9s; }
+        .video-card:nth-child(10) { animation-delay: 1s; }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .video-card:hover {
+            transform: scale(1.02);
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        .video-title {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 */
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .video-card { padding: 1rem; }
+            .video-title { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Suffocating Cinema Trailers</h1>
+        <div class="video-list">
+            <div class="video-card">
+                <h3 class="video-title">Closeness (Tesnota) Official Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/9m0z0kR6l8w?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">The Tribe Official Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/zqTwtWA1MhE?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">Playground (Un monde) Official Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/2G8x4jV9e0M?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">Atlantis Official Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/hV6iXb9sT5k?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">Revanche Trailer (English Subtitles)</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/9D8x0Y7o6nc?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">Beginning Official Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/9fYJ9h5z3ec?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">Ratcatcher Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/4V1ghgjI1wY?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">Beanpole Official Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/rL3c9v4j9gM?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">Leviathan Official Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/0v3zm5xb1Nk?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+            <div class="video-card">
+                <h3 class="video-title">Silent Light Trailer</h3>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/5eI2p4o2h0A?rel=0&modestbranding=1" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

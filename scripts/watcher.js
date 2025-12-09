@@ -1,9 +1,8 @@
-require('dotenv').config();
+const path = require('path');
 require('dotenv').config({ path: path.resolve(process.cwd(), '.env.local') });
 const chokidar = require('chokidar');
 const matter = require('gray-matter');
 const fs = require('fs');
-const path = require('path');
 const axios = require('axios');
 const admin = require('firebase-admin');
 
@@ -28,8 +27,8 @@ const db = admin.firestore();
 const WATCH_DIR = path.join(__dirname, '../source_md');
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
-// Regex: [0001]Title_[05]Category.md
-const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+)_\[(?<catId>\d+)\](?<catTitle>.+)\.md$/;
+// Regex: [0001]Title_[05]Category.md OR [0001]Title_[AESTHETIC].md
+const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+)_\[(?<catId>[^\]]+)\](?<catTitle>.*)\.md$/;
 
 console.log(`Starting CineArch Watcher...`);
 console.log(`Watching directory: ${WATCH_DIR}`);

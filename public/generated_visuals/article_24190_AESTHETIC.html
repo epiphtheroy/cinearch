@@ -3,218 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cinematic Abyss: YouTube Trailers</title>
+    <title>Time of the Wolf: The Curation - Into the Abyss</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(180deg, #000000 0%, #1a1a1a 50%, #000000 100%);
-            color: #e0e0e0;
-            line-height: 1.6;
+            font-family: 'Georgia', 'Times New Roman', Times, serif;
+            background: linear-gradient(180deg, #000000 0%, #0a0a0a 30%, #1a0d2e 70%, #000000 100%);
+            color: #f0f0f0;
+            line-height: 1.7;
             overflow-x: hidden;
             min-height: 100vh;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 0 20px;
         }
-        h1 {
+
+        header {
             text-align: center;
-            font-size: clamp(2rem, 5vw, 4rem);
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            padding: 60px 0 40px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            background: linear-gradient(45deg, #ffffff, #b0b0b0, #ffffff);
+            background-size: 300% 300%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
-            margin-bottom: 3rem;
-            animation: glow 2s ease-in-out infinite alternate;
+            animation: gradientShift 4s ease infinite;
+            margin-bottom: 20px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
         }
-        @keyframes glow {
-            from { text-shadow: 0 0 20px rgba(255, 107, 107, 0.5), 0 0 30px rgba(78, 205, 196, 0.3); }
-            to { text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 40px rgba(78, 205, 196, 0.5); }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
-        .video-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 2rem;
-            padding: 2rem 0;
+
+        .subtitle {
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            color: #aaa;
+            font-style: italic;
+            max-width: 600px;
+            margin: 0 auto;
         }
-        .video-item {
-            background: rgba(26, 26, 26, 0.8);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: fadeInUp 0.8s ease forwards;
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%;
+            margin: 40px 0 60px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            animation: fadeInUp 1.5s ease-out;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        section {
+            margin-bottom: 80px;
             opacity: 0;
-            transform: translateY(50px);
+            transform: translateY(40px);
+            animation: fadeInUp 1.2s ease-out forwards;
         }
-        .video-item:nth-child(1) { animation-delay: 0.1s; }
-        .video-item:nth-child(2) { animation-delay: 0.2s; }
-        .video-item:nth-child(3) { animation-delay: 0.3s; }
-        .video-item:nth-child(4) { animation-delay: 0.4s; }
-        .video-item:nth-child(5) { animation-delay: 0.5s; }
-        .video-item:nth-child(6) { animation-delay: 0.6s; }
-        .video-item:nth-child(7) { animation-delay: 0.7s; }
-        .video-item:nth-child(8) { animation-delay: 0.8s; }
-        .video-item:nth-child(9) { animation-delay: 0.9s; }
-        .video-item:nth-child(10) { animation-delay: 1s; }
+
+        section:nth-child(3) { animation-delay: 0.2s; }
+        section:nth-child(4) { animation-delay: 0.4s; }
+        section:nth-child(5) { animation-delay: 0.6s; }
+
         @keyframes fadeInUp {
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        .video-item:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 60px rgba(69, 183, 209, 0.4);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-        .video-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: #ffffff;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-        }
-        .video-frame {
-            width: 100%;
-            height: 225px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-            transition: all 0.3s ease;
-        }
-        .video-frame iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        .video-frame:hover {
-            box-shadow: 0 12px 40px rgba(255, 107, 107, 0.4);
-        }
-        .play-link {
-            display: inline-block;
-            margin-top: 1rem;
-            padding: 0.8rem 1.5rem;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+
+        h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
             text-align: center;
+            margin-bottom: 30px;
+            color: #ffffff;
+            position: relative;
         }
-        .play-link:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.6);
+
+        h2::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #666, transparent);
+            margin: 10px auto;
         }
+
+        h3 {
+            font-size: clamp(1.3rem, 3vw, 1.6rem);
+            color: #e0e0e0;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 3px solid #444;
+            animation: slideInLeft 1s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-30px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .intro, .conclusion {
+            font-size: clamp(1.1rem, 2.2vw, 1.3rem);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            padding: 0 20px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #444, transparent);
+            margin: 40px 0;
+        }
+
+        .films-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .film-card {
+            background: linear-gradient(145deg, rgba(20,20,20,0.8), rgba(10,10,10,0.9));
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(100,100,100,0.1);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+
+        .film-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #666, transparent);
+        }
+
+        .film-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+            border-color: rgba(200,200,200,0.2);
+        }
+
+        .film-title {
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .film-meta {
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .film-desc {
+            color: #d0d0d0;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .subheader {
+            font-size: 1.3rem;
+            color: #ccc;
+            margin: 40px 0 20px;
+            text-align: center;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            .video-list {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-            .video-item {
-                padding: 1.2rem;
-            }
-            .video-frame {
-                height: 200px;
-            }
+            .container { padding: 0 15px; }
+            header { padding: 40px 0 30px; }
+            .intro, .conclusion { padding: 25px; font-size: 1.1rem; }
+            .films-grid { grid-template-columns: 1fr; gap: 25px; }
+            .film-card { padding: 25px; }
         }
+
         footer {
             text-align: center;
-            padding: 3rem 0;
-            color: #888;
+            padding: 40px 0;
+            color: #666;
             font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Cinematic Shadows: Essential Trailers</h1>
-        <div class="video-list">
-            <div class="video-item">
-                <div class="video-title">1. The Wall (Julian Pölsler, 2012) - Official Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/gm8kuCI8-Kg" title="The Wall Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=gm8kuCI8-Kg&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">2. Twentynine Palms (Bruno Dumont, 2003) - Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/TwGfXbYJq4Y" title="Twentynine Palms Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=TwGfXbYJq4Y&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">3. White Material (Claire Denis, 2009) - Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/3v0kYkxxa8Y" title="White Material Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=3v0kYkxxa8Y&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">4. The Painted Bird (Václav Marhoul, 2019) - Official Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/4iJ_0e5BHbU" title="The Painted Bird Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=4iJ_0e5BHbU&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">5. Hard to Be a God (Aleksei German, 2013) - Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/ntXb7r3a1-o" title="Hard to Be a God Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=ntXb7r3a1-o&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">6. Dead Man's Letters (Konstantin Lopushansky, 1986) - Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/2v4A6v8v0s4" title="Dead Man's Letters Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=2v4A6v8v0s4&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">7. Essential Killing (Jerzy Skolimowski, 2010) - Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/0W9z8q6K1sM" title="Essential Killing Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=0W9z8q6K1sM&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">8. Post Tenebras Lux (Carlos Reygadas, 2012) - Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/7iJ4RTq5zE4" title="Post Tenebras Lux Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=7iJ4RTq5zE4&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">9. On the Silver Globe (Andrzej Żuławski, 1988) - Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/Na4m8J6k0zY" title="On the Silver Globe Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=Na4m8J6k0zY&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
-            <div class="video-item">
-                <div class="video-title">10. An Elephant Sitting Still (Hu Bo, 2018) - Official Trailer</div>
-                <div class="video-frame">
-                    <iframe src="https://www.youtube.com/embed/0VvT106O_5s" title="An Elephant Sitting Still Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
-                </div>
-                <a href="https://www.youtube.com/watch?v=0VvT106O_5s&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
-            </div>
+        <header>
+            <h1>The Time of the Wolf Curation</h1>
+            <p class="subtitle">Staring into the Abyss – A Journey Through Raw Cinema</p>
+        </header>
+
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/cJUxjnErFUU?rel=0&modestbranding=1&autoplay=0&controls=1&showinfo=0&fs=1&iv_load_policy=3" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
         </div>
-        <footer>Immerse in the shadows. Trailers sourced from YouTube for the curation's films.</footer>
+
+        <section>
+            <div class="intro">
+                <h2>Introduction (The Promise)</h2>
+                <p>Darkness reveals our true nature.<br>
+                Haneke’s vision strips away civilization. You have witnessed the void in <em>Time of the Wolf</em>, proving you possess the fortitude to stare into the abyss without blinking. This is a rare aesthetic constitution.<br><br>
+                The following curation guarantees immersion. It leads you away from the safety of the known canon into the shadows of the forgotten and the overshadowed, where the cinematic experience is raw, uncompromising, and terrifyingly real.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>The Curation (The Journey)</h2>
+
+            <p class="subheader">Harmonic Resonances</p>
+            <p style="text-align: center; color: #aaa; font-style: italic;">Films that match the Level 7 intensity of the Anchor, mirroring its sensory imprint and intimate dread.</p>
+
+            <div class="films-grid">
+                <div class="film-card">
+                    <h3>1. The Wall (Julian Pölsler, 2012, The Austrian Alps)</h3>
+                    <div class="film-meta">Isolation is the only truth.</div>
+                    <p class="film-desc">An invisible barrier traps a woman alone. While Haneke explores the social friction of the apocalypse, Pölsler explores the absolute solitude of it. The aesthetic kinship lies in the terrifying realism of survival; there are no zombies, only the crushing indifference of nature and the psyche’s slow erosion. Prepare for a silence that is louder than screams.</p>
+                </div>
+
+                <div class="film-card">
+                    <h3>2. Twentynine Palms (Bruno Dumont, 2003, California Desert)</h3>
+                    <div class="film-meta">The desert offers no salvation.</div>
+                    <p class="film-desc">Two lovers unravel amidst primal emptiness. Dumont, like Haneke, refuses to psychologize his characters, presenting their behaviors as biological reactions to an indifferent environment. This film vibrates with the same threat of imminent, unexplained violence that permeates <em>Time of the Wolf</em>. You will feel the tension in your muscles before you see the horror.</p>
+                </div>
+
+                <div class="film-card">
+                    <h3>3. White Material (Claire Denis, 2009, Unnamed African Country)</h3>
+                    <div class="film-meta">Chaos ignores all forceful refusal.</div>
+                    <p class="film-desc">A plantation owner denies impending collapse. Where Haneke used darkness to obscure the breakdown, Denis uses blinding, overexposed sunlight to hide the encroaching militia. It captures the exact same suffocating anxiety of a social order evaporating while the protagonist stubbornly clings to normalcy. This is the panic of a world ending in broad daylight.</p>
+                </div>
+
+                <div class="film-card">
+                    <h3>4. The Painted Bird (Václav Marhoul, 2019, Eastern Europe)</h3>
+                    <div class="film-meta">Cruelty becomes a universal language.</div>
+                    <p class="film-desc">A boy wanders a shattered landscape. If <em>Time of the Wolf</em> is the prologue to the end of humanity, this film is the brutal middle chapter. Shot in stark, high-contrast monochrome, it shares Haneke’s unflinching gaze upon the capacity for human evil when consequences are removed. Witness a sensory assault that tests the limits of empathy.</p>
+                </div>
+
+                <div class="film-card">
+                    <h3>5. Hard to Be a God (Aleksei German, 2013, Arkanar)</h3>
+                    <div class="film-meta">History is a stagnant mud pit.</div>
+                    <p class="film-desc">Scientists observe a planet stuck in medieval squalor. This is not science fiction; it is a texture so visceral you can smell the rot and rain. It mirrors the chaotic, muddy aesthetic of Haneke’s railway station but dials the sensory immersion up to a suffocating degree. Enter a world where civilization didn’t just fail; it drowned.</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <p class="subheader">Ascending Experiences</p>
+            <p style="text-align: center; color: #aaa; font-style: italic;">Films that elevate to Level 8, transforming the dread of survival into rigorous philosophical inquiry.</p>
+
+            <div class="films-grid">
+                <div class="film-card">
+                    <h3>6. Dead Man's Letters (Konstantin Lopushansky, 1986, Post-Nuclear Ruins)</h3>
+                    <div class="film-meta">The apocalypse requires new philosophy.</div>
+                    <p class="film-desc">A scholar writes to his vanished son. This Soviet masterpiece transcends the survival thriller to become a profound treatise on the persistence of the human spirit. Visually, it utilizes a sepia-toned, claustrophobic palette that makes Haneke’s darkness feel spacious by comparison. It demands you not just survive the end, but comprehend its moral necessity.</p>
+                </div>
+
+                <div class="film-card">
+                    <h3>7. Essential Killing (Jerzy Skolimowski, 2010, Frozen Wilderness)</h3>
+                    <div class="film-meta">Survival is purely a biological instinct.</div>
+                    <p class="film-desc">A prisoner escapes into a white void. Stripped of almost all dialogue, this film elevates the "man on the run" trope into an existential abstraction of pure motion and pain. It takes the frantic energy of Haneke’s characters and refines it into a silent, hypnotic meditation on the body’s will to persist. You will stop thinking and start breathing with the protagonist.</p>
+                </div>
+
+                <div class="film-card">
+                    <h3>8. Post Tenebras Lux (Carlos Reygadas, 2012, Mexican Countryside)</h3>
+                    <div class="film-meta">Evil is an ambient force.</div>
+                    <p class="film-desc">Domestic life fractures under spiritual weight. Reygadas fractures the narrative form completely, utilizing a distorted lens to visualize the psychological dislocation that Haneke only implies. It moves beyond the social breakdown to suggest a cosmic, almost supernatural deterioration of the family unit. Surrender to the imagery; do not try to solve it.</p>
+                </div>
+
+                <div class="film-card">
+                    <h3>9. On the Silver Globe (Andrzej Żuławski, 1988, Alien Lunar Landscape)</h3>
+                    <div class="film-meta">Civilization is a cyclical curse.</div>
+                    <p class="film-desc">Astronauts forge a new, doomed religion. This is the operatic, manic counterpart to Haneke’s stoic realism, presenting the birth of a warped society rather than the death of an old one. It matches the anchor’s despair but amplifies the scale to a fever pitch of philosophical madness and visual ecstasy. Behold a jagged, incomplete monument to human folly.</p>
+                </div>
+
+                <div class="film-card">
+                    <h3>10. An Elephant Sitting Still (Hu Bo, 2018, Industrial China)</h3>
+                    <div class="film-meta">Despair binds us all together.</div>
+                    <p class="film-desc">Four lives intersect in gray misery. At nearly four hours, this film is an endurance test that transforms social decay into a sublime, sorrowful elegy. It captures the same "time of the wolf" twilight—that moment before total darkness—but stretches it into an epic of nihilism. Commit your time, and it will alter your perception of passing time.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="conclusion">
+                <h2>Conclusion (The Horizon)</h2>
+                <p>The screen fades to black.<br>
+                We are left with ourselves.<br><br>
+                These ten films do not offer comfort; they offer a mirror to the fragility of our constructed reality. By venturing into these obscure territories, you validate the cinematic search for truth, no matter how harsh the illumination.</p>
+            </div>
+        </section>
+
+        <footer>
+            <p>A curation into the shadows of cinema. Dare to immerse.</p>
+        </footer>
     </div>
 </body>
 </html>

@@ -7,9 +7,15 @@ export default function GeneratorPage() {
     const [files, setFiles] = useState<string[]>([]);
     const [selectedFile, setSelectedFile] = useState('');
     const [prompt, setPrompt] = useState('');
+    const [provider, setProvider] = useState('xAI');
     const [model, setModel] = useState('grok-4-1-fast-reasoning');
     const [loading, setLoading] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
+
+    const MODELS = {
+        'xAI': ['grok-4-1-fast-reasoning', 'grok-beta', 'grok-2-vision-1212'],
+        'Google': ['gemini-1.5-pro-latest', 'gemini-1.5-flash', 'gemini-1.0-pro']
+    };
 
     useEffect(() => {
         // Fetch files
@@ -24,11 +30,18 @@ export default function GeneratorPage() {
             .catch(err => setLogs(p => [...p, `Error loading files: ${err.message}`]));
     }, []);
 
+    // Update model default when provider changes
+    const handleProviderChange = (newProvider: string) => {
+        setProvider(newProvider);
+        // @ts-ignore
+        setModel(MODELS[newProvider][0]);
+    };
+
     const handleGenerate = async () => {
         if (!selectedFile || !prompt) return;
 
         setLoading(true);
-        setLogs(prev => [...prev, `Starting generation for ${selectedFile}...`]);
+        setLogs(prev => [...prev, `Starting generation for ${selectedFile} using ${provider} (${model})...`]);
 
         try {
             const res = await fetch('/api/admin/generate-html', {
@@ -37,6 +50,7 @@ export default function GeneratorPage() {
                 body: JSON.stringify({
                     filename: selectedFile,
                     prompt: prompt,
+                    provider: provider,
                     model: model
                 })
             });
@@ -99,20 +113,31 @@ export default function GeneratorPage() {
                             />
                         </div>
 
-                        {/* Model Configuration */}
-                        <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
-                            <label className="block text-sm font-medium text-gray-400 mb-2">AI Model</label>
-                            <div className="flex gap-4">
+                        {/* AI Configuration */}
+                        <div className="bg-gray-900 p-6 rounded-lg border border-gray-800 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">AI Provider</label>
                                 <select
-                                    className="flex-1 bg-black border border-gray-700 rounded-md p-3 text-white outline-none"
-                                    value={model} // Use value prop for controlled component
-                                    onChange={(e) => setModel(e.target.value)} // Update state on change
-                                    name="modelSelect"
-                                    id="modelSelect"
+                                    className="w-full bg-black border border-gray-700 rounded-md p-3 text-white outline-none"
+                                    value={provider}
+                                    onChange={(e) => handleProviderChange(e.target.value)}
                                 >
-                                    <option value="grok-4-1-fast-reasoning">grok-4-1-fast-reasoning (Default)</option>
-                                    <option value="grok-beta">grok-beta</option>
-                                    <option value="gemini-1.5-pro-latest">gemini-1.5-pro-latest</option>
+                                    <option value="xAI">xAI (Grok)</option>
+                                    <option value="Google">Google (Gemini)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">Model</label>
+                                <select
+                                    className="w-full bg-black border border-gray-700 rounded-md p-3 text-white outline-none"
+                                    value={model}
+                                    onChange={(e) => setModel(e.target.value)}
+                                >
+                                    {/* @ts-ignore */}
+                                    {MODELS[provider].map((m: string) => (
+                                        <option key={m} value={m}>{m}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>

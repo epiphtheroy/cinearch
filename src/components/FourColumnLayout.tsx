@@ -35,6 +35,7 @@ interface FourColumnLayoutProps {
 }
 
 export default function FourColumnLayout({ movie, articles }: FourColumnLayoutProps) {
+    console.log(`[FourColumnLayout] Rendered. Articles: ${articles.length}, Mobie: ${movie.title}`);
     const [activeArticleId, setActiveArticleId] = useState<string | null>(articles[0]?.id || null);
 
     const activeArticle = articles.find(a => a.id === activeArticleId);
@@ -48,13 +49,13 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
     ];
 
     return (
-        <div className="min-h-screen flex flex-col lg:flex-row font-sans bg-background text-foreground overflow-hidden">
+        <div className="min-h-screen flex flex-col lg:flex-row font-sans bg-background text-foreground overflow-x-hidden lg:overflow-hidden">
 
             {/* --- COLUMN 1: Movie Metadata (Sticky Left) --- */}
             {/* Added nuanced gradient: Black -> Very Dark Zinc */}
             <aside className="w-full lg:w-[18%] h-screen overflow-y-auto bg-gradient-to-b from-black to-zinc-950 p-6 flex flex-col gap-6 hide-scrollbar z-30 shrink-0 relative">
                 {/* Gradient Border Right */}
-                <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-red-900 via-yellow-900/50 to-blue-900 opacity-80"></div>
+                <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-red-900 via-yellow-900/50 to-blue-900 opacity-80 pointer-events-none"></div>
 
                 <Link href="/" className="text-xs text-zinc-500 hover:text-white mb-4 block transition-colors tracking-widest uppercase">
                     ← Archive
@@ -95,7 +96,7 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
             {/* Reduced width to ~8% (approx half of 15%), Lighter gradient */}
             <nav className="w-full lg:w-[8%] h-screen overflow-y-auto bg-gradient-to-b from-zinc-950 to-zinc-900/50 hide-scrollbar z-20 shrink-0 relative">
                 {/* Gradient Border Right */}
-                <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-blue-900 via-red-900/50 to-yellow-900 opacity-80"></div>
+                <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-blue-900 via-red-900/50 to-yellow-900 opacity-80 pointer-events-none"></div>
 
                 <div className="py-6 flex flex-col">
                     <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-6 px-3">Index</h3>
@@ -205,7 +206,7 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
             {/* Increased width to ~25% (18% + 7%), Distinct styling */}
             <aside className="w-full lg:w-[25%] h-screen overflow-hidden bg-gradient-to-b from-[#050505] to-black relative z-20">
                 {/* Gradient Border Left */}
-                <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-yellow-900 via-blue-900/50 to-red-900 opacity-80 z-10"></div>
+                <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-yellow-900 via-blue-900/50 to-red-900 opacity-80 z-10 pointer-events-none"></div>
 
                 {activeArticle ? (
                     <div className="w-full h-full relative group">
@@ -215,6 +216,8 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                             src={`/generated_visuals/${activeArticle.id}.html`}
                             className="w-full h-full border-none bg-black"
                             title="Generated Visual"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
                         />
 
                         {/* Overlay text if needed, or simple fallback if empty? 

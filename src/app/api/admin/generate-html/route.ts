@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
@@ -56,7 +57,30 @@ export async function POST(req: Request) {
         const outputDir = path.join(process.cwd(), 'public', 'generated_visuals');
         const outputPath = path.join(outputDir, outputFilename);
 
-        // 3. Construct Full Prompt
+        // 3. Fetch Official Trailer from TMDB (to prevent AI Hallucinations)
+        let officialTrailerKey = null;
+        const tmdbKey = process.env.TMDB_API_KEY;
+        if (tmdbKey && movieId) {
+            try {
+                console.log(`[API] Fetching videos for Movie ID: ${movieId}`);
+                const videoRes = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}/videos`, {
+                    params: { api_key: tmdbKey }
+                });
+
+                // Find first YouTube Trailer
+                const trailer = videoRes.data.results.find((v: any) => v.site === "YouTube" && v.type === "Trailer")
+                    || videoRes.data.results.find((v: any) => v.site === "YouTube"); // Fallback to any YT video
+
+                if (trailer) {
+                    officialTrailerKey = trailer.key;
+                    console.log(`[API] Found Trailer ID: ${officialTrailerKey}`);
+                }
+            } catch (err: any) {
+                console.warn(`[API] Failed to fetch TMDB videos: ${err.message}`);
+            }
+        }
+
+        // 4. Construct Full Prompt
         // Combine User Prompt + Article Content
         const fullPrompt = `
 You are a creative frontend developer and designer. 
@@ -65,6 +89,19 @@ The output must be a raw HTML file (no markdown code blocks, just the code).
 It should be visually artistic, using modern CSS (animations, gradients, typography).
 Do not include any external JS unless absolutely necessary (Vanilla CSS preferred).
 Make it responsive.
+
+${officialTrailerKey ? `
+IMPORTANT VIDEO INSTRUCTION:
+I have found the OFFICIAL YouTube Trailer for this film.
+Video ID: "${officialTrailerKey}"
+You MUST embed this video in your design using an iframe.
+Format: <iframe src="https://www.youtube.com/embed/${officialTrailerKey}?rel=0&modestbranding=1" ...></iframe>
+Do NOT use any other Video ID. Use this one.` : `
+If the content discusses a specific film, you may attempt to embed a relevant YouTube trailer/scene if appropriate.
+IMPORTANT:
+1. You MUST find a REAL, VALID YouTube Video ID for the specific film. Do NOT hallucinate IDs.
+2. Use the iframe format: "https://www.youtube.com/embed/[VIDEO_ID]?rel=0&modestbranding=1"
+3. Do NOT use <video> tags.`}
 
 TARGET CONTENT:
 "${content}"
