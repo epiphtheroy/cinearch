@@ -58,7 +58,7 @@ function getAnyXaiApiKey(): string | undefined {
                 }
             }
         }
-    } catch (_e) { return undefined; }
+    } catch { return undefined; }
     return undefined;
 }
 
