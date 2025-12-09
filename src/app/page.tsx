@@ -2,7 +2,7 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, query } from 'firebase/firestore';
 import HeroSection from '@/components/HeroSection';
 import MovieGrid from '@/components/MovieGrid';
-import Navbar from '@/components/Navbar';
+// import Navbar from '@/components/Navbar';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +39,7 @@ export default async function Home() {
 
     return (
         <main className="min-h-screen bg-white text-black font-sans">
-            <Navbar />
+            {/* Navbar is handled in Layout */}
             <HeroSection />
             <MovieGrid initialMovies={movies} />
 
