@@ -5,31 +5,9 @@ import matter from 'gray-matter';
 import * as admin from 'firebase-admin';
 import axios from 'axios';
 
-// Lazy initialization helper
-function getAdminDb() {
-    if (!admin.apps.length) {
-        try {
-            const serviceAccountJson = process.env.GOOGLE_CREDENTIALS_JSON;
-            if (serviceAccountJson) {
-                const serviceAccount = JSON.parse(serviceAccountJson);
-                admin.initializeApp({
-                    credential: admin.credential.cert(serviceAccount)
-                });
-                console.log('Firebase Admin initialized with GOOGLE_CREDENTIALS_JSON');
-            } else {
-                // Fallback for local dev
-                admin.initializeApp({
-                    credential: admin.credential.applicationDefault()
-                });
-                console.log('Firebase Admin initialized with applicationDefault');
-            }
-        } catch (error: any) {
-            console.error('Firebase Admin Init Error:', error.message);
-            throw error; // Re-throw to handle in caller
-        }
-    }
-    return admin.firestore();
-}
+import { getAdminDb } from '@/lib/firebaseAdmin';
+
+// Removed local getAdminDb implementation
 
 const WATCH_DIR = path.join(process.cwd(), 'source_md');
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -122,6 +100,9 @@ export async function POST() {
                     title: frontmatter.title || 'Untitled', // Specific article title
                     // categoryId removed
                     categoryName: (frontmatter.categoryName || categoryNameUpper).toUpperCase(),
+                    slug: frontmatter.slug || '', // New field
+                    director: frontmatter.director || '', // New field
+                    lang: frontmatter.lang || 'en', // New field
                     content: content.trim(),
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });

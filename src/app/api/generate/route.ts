@@ -11,6 +11,27 @@ function sanitizeFilename(name: string): string {
     return name.replace(/[^a-zA-Z0-9가-힣\s]/g, '').trim();
 }
 
+function sanitizeSlug(text: string): string {
+    return text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric chars except space and hyphen
+        .trim()
+        .replace(/\s+/g, '-'); // Replace spaces with hyphens
+}
+
+async function getDirector(tmdbId: string, apiKey: string): Promise<string> {
+    try {
+        const res = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}/credits`, {
+            params: { api_key: apiKey }
+        });
+        const director = res.data.crew.find((p: any) => p.job === 'Director');
+        return director ? director.name : '';
+    } catch (e) {
+        console.warn(`Failed to fetch director for ${tmdbId}`);
+        return '';
+    }
+}
+
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
 export async function POST(_request: Request) {
@@ -25,26 +46,35 @@ export async function POST(_request: Request) {
 
         for (const item of queue) {
             try {
-                // Fetch Title from TMDB using ID
+                // Fetch Title and Director from TMDB using ID
                 let movieTitle = `Movie_${item.tmdbId}`; // Fallback
+                let directorName = '';
+                let slug = '';
+
                 if (TMDB_API_KEY) {
                     try {
-                        const tmdbRes = await axios.get(`https://api.themoviedb.org/3/movie/${item.tmdbId}`, {
-                            params: {
-                                api_key: TMDB_API_KEY,
-                                language: 'en-US'
-                            }
-                        });
+                        const [tmdbRes, director] = await Promise.all([
+                            axios.get(`https://api.themoviedb.org/3/movie/${item.tmdbId}`, {
+                                params: { api_key: TMDB_API_KEY, language: 'en-US' }
+                            }),
+                            getDirector(item.tmdbId, TMDB_API_KEY)
+                        ]);
+
                         if (tmdbRes.data && tmdbRes.data.title) {
                             movieTitle = tmdbRes.data.title;
                         }
+                        directorName = director;
+
+                        // Generate Slug: kebab-case(tmdb_english_title + "-" + director_last_name)
+                        // Heuristic: Last word of director name
+                        const directorLastName = directorName.split(' ').pop() || '';
+                        slug = sanitizeSlug(`${movieTitle}-${directorLastName}`);
+
                     } catch (err: any) {
-                        // If fetch fails, we might technically stop, but let's try to proceed if we can?
-                        // But without title, generation is hard.
                         throw new Error(`Failed to fetch TMDB data for ID ${item.tmdbId}: ${err.message}`);
                     }
                 } else {
-                    throw new Error("TMDB_API_KEY is missing. Cannot fetch movie title from ID.");
+                    throw new Error("TMDB_API_KEY is missing. Cannot fetch movie title/director from ID.");
                 }
 
                 // Determine Categories to Process
@@ -89,10 +119,14 @@ export async function POST(_request: Request) {
                         }
 
                         // Prepend Frontmatter
+                        // Prepend Frontmatter
                         const frontmatter = `---
 movieId: ${movieId}
 movieTitle: ${movieTitle}
 categoryName: ${catNameUpper}
+director: ${directorName}
+slug: ${slug}
+lang: en
 ---
 
 `;
