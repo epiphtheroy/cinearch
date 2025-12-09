@@ -8,7 +8,7 @@ const ENV_PATH = path.join(process.cwd(), '.env.local');
 function safeParse(str: string) {
     try {
         return JSON.parse(str);
-    } catch (e) {
+    } catch (_e) {
         return {};
     }
 }
@@ -27,7 +27,7 @@ export async function GET() {
         }
 
         return NextResponse.json({});
-    } catch (error) {
+    } catch (_error) {
         return NextResponse.json({ error: 'Failed to read config from .env.local' }, { status: 500 });
     }
 }
