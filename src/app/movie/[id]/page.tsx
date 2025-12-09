@@ -1,6 +1,6 @@
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import ThreeColumnLayout from '@/components/ThreeColumnLayout';
+import FourColumnLayout from '@/components/FourColumnLayout';
 import Link from 'next/link';
 
 async function getMovieData(id: string) {
@@ -112,5 +112,5 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
 
     const articles = await getArticles(movie.id);
 
-    return <ThreeColumnLayout movie={movie} articles={articles} />;
+    return <FourColumnLayout movie={movie} articles={articles} />;
 }

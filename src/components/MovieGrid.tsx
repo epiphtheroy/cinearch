@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import AlphaIndex from './AlphaIndex';
@@ -22,12 +22,11 @@ export default function MovieGrid({ initialMovies }: { initialMovies: any[] }) {
     const [searchTerm, setSearchTerm] = useState('');
 
     // Random Shuffle state
-    const [randomMovies, setRandomMovies] = useState<Movie[]>([]);
+    const [randomMovies, setRandomMovies] = useState<Movie[]>(initialMovies);
 
-    useMemo(() => {
-        // Shuffle on mount or when initialMovies changes (effectively mount)
-        const shuffled = [...initialMovies].sort(() => 0.5 - Math.random());
-        setRandomMovies(shuffled);
+    useEffect(() => {
+        // Shuffle on mount, client-side only to prevent hydration mismatch
+        setRandomMovies(prev => [...prev].sort(() => 0.5 - Math.random()));
     }, [initialMovies]);
 
 
@@ -63,8 +62,7 @@ export default function MovieGrid({ initialMovies }: { initialMovies: any[] }) {
     const handleSelectLetter = (letter: string) => {
         setActiveLetter(letter);
         if (letter === 'RANDOM') {
-            // Re-shuffle when clicking Random? Or just show existing shuffled? 
-            // Let's re-shuffle for fun interaction
+            // Re-shuffle when clicking Random
             const shuffled = [...initialMovies].sort(() => 0.5 - Math.random());
             setRandomMovies(shuffled);
             window.scrollTo({ top: 0, behavior: "smooth" });
@@ -147,6 +145,7 @@ function MovieCard({ movie }: { movie: Movie }) {
                         src={movie.metadata.posterUrl}
                         alt={movie.title}
                         fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
                         className="object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                 ) : (
