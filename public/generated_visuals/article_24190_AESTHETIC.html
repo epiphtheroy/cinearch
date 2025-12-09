@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinematic Abyss: YouTube Trailers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(180deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            font-size: clamp(2rem, 5vw, 4rem);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+            margin-bottom: 3rem;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255, 107, 107, 0.5), 0 0 30px rgba(78, 205, 196, 0.3); }
+            to { text-shadow: 0 0 30px rgba(255, 107, 107, 0.8), 0 0 40px rgba(78, 205, 196, 0.5); }
+        }
+        .video-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+        .video-item {
+            background: rgba(26, 26, 26, 0.8);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 0.8s ease forwards;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        .video-item:nth-child(1) { animation-delay: 0.1s; }
+        .video-item:nth-child(2) { animation-delay: 0.2s; }
+        .video-item:nth-child(3) { animation-delay: 0.3s; }
+        .video-item:nth-child(4) { animation-delay: 0.4s; }
+        .video-item:nth-child(5) { animation-delay: 0.5s; }
+        .video-item:nth-child(6) { animation-delay: 0.6s; }
+        .video-item:nth-child(7) { animation-delay: 0.7s; }
+        .video-item:nth-child(8) { animation-delay: 0.8s; }
+        .video-item:nth-child(9) { animation-delay: 0.9s; }
+        .video-item:nth-child(10) { animation-delay: 1s; }
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .video-item:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(69, 183, 209, 0.4);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .video-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+        }
+        .video-frame {
+            width: 100%;
+            height: 225px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            transition: all 0.3s ease;
+        }
+        .video-frame iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .video-frame:hover {
+            box-shadow: 0 12px 40px rgba(255, 107, 107, 0.4);
+        }
+        .play-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .play-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.6);
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            .video-list {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .video-item {
+                padding: 1.2rem;
+            }
+            .video-frame {
+                height: 200px;
+            }
+        }
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            color: #888;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cinematic Shadows: Essential Trailers</h1>
+        <div class="video-list">
+            <div class="video-item">
+                <div class="video-title">1. The Wall (Julian Pölsler, 2012) - Official Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/gm8kuCI8-Kg" title="The Wall Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=gm8kuCI8-Kg&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">2. Twentynine Palms (Bruno Dumont, 2003) - Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/TwGfXbYJq4Y" title="Twentynine Palms Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=TwGfXbYJq4Y&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">3. White Material (Claire Denis, 2009) - Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/3v0kYkxxa8Y" title="White Material Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=3v0kYkxxa8Y&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">4. The Painted Bird (Václav Marhoul, 2019) - Official Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/4iJ_0e5BHbU" title="The Painted Bird Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=4iJ_0e5BHbU&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">5. Hard to Be a God (Aleksei German, 2013) - Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/ntXb7r3a1-o" title="Hard to Be a God Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=ntXb7r3a1-o&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">6. Dead Man's Letters (Konstantin Lopushansky, 1986) - Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/2v4A6v8v0s4" title="Dead Man's Letters Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=2v4A6v8v0s4&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">7. Essential Killing (Jerzy Skolimowski, 2010) - Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/0W9z8q6K1sM" title="Essential Killing Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=0W9z8q6K1sM&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">8. Post Tenebras Lux (Carlos Reygadas, 2012) - Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/7iJ4RTq5zE4" title="Post Tenebras Lux Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=7iJ4RTq5zE4&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">9. On the Silver Globe (Andrzej Żuławski, 1988) - Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/Na4m8J6k0zY" title="On the Silver Globe Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=Na4m8J6k0zY&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+            <div class="video-item">
+                <div class="video-title">10. An Elephant Sitting Still (Hu Bo, 2018) - Official Trailer</div>
+                <div class="video-frame">
+                    <iframe src="https://www.youtube.com/embed/0VvT106O_5s" title="An Elephant Sitting Still Trailer" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>
+                </div>
+                <a href="https://www.youtube.com/watch?v=0VvT106O_5s&autoplay=1" class="play-link" target="_blank">▶ Play Full Trailer</a>
+            </div>
+        </div>
+        <footer>Immerse in the shadows. Trailers sourced from YouTube for the curation's films.</footer>
+    </div>
+</body>
+</html>

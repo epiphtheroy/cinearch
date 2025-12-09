@@ -42,6 +42,26 @@ function getConfig(categoryName: string): categoryConfig {
     }
 }
 
+// Helper: Scan settings for any valid xAI key
+function getAnyXaiApiKey(): string | undefined {
+    try {
+        if (!fs.existsSync(ENV_PATH)) return undefined;
+        const envContent = fs.readFileSync(ENV_PATH, 'utf-8');
+        const match = envContent.match(/^AI_SETTINGS_BASE64=(.+)$/m);
+        if (match && match[1]) {
+            const jsonStr = Buffer.from(match[1], 'base64').toString('utf-8');
+            const settings: AiSettings = JSON.parse(jsonStr);
+            // Look for any config using xAI with a key
+            for (const key in settings) {
+                if ((settings[key].provider === 'xAI' || key.toLowerCase() === 'xai') && settings[key].apiKey) {
+                    return settings[key].apiKey;
+                }
+            }
+        }
+    } catch (e) { return undefined; }
+    return undefined;
+}
+
 export async function generateMovieContent(movieTitle: string, promptTemplate: string, categoryName: string): Promise<string> {
     const config = getConfig(categoryName);
     console.log(`[LLM] Generating for '${categoryName}' using ${config.provider} (${config.model})`);
@@ -82,7 +102,7 @@ async function generateWithGemini(prompt: string, config: categoryConfig): Promi
 
 // Grok Implementation (OpenAI-compatible)
 async function generateWithGrok(prompt: string, config: categoryConfig): Promise<string> {
-    const apiKey = config.apiKey || process.env.XAI_API_KEY; // Fallback to env if needed
+    const apiKey = config.apiKey || process.env.XAI_API_KEY || getAnyXaiApiKey(); // Fallback to found key
     if (!apiKey) throw new Error("xAI API Key not found (Config)");
 
     try {
@@ -105,5 +125,17 @@ async function generateWithGrok(prompt: string, config: categoryConfig): Promise
     } catch (error: any) {
         console.error("Grok/xAI Error:", error.response?.data || error.message);
         throw new Error(`Grok Generation Failed: ${error.message}`);
+    }
+}
+
+// Expose manual generation for Admin tools
+export async function generateCustomContent(prompt: string, config: categoryConfig): Promise<string> {
+    console.log(`[LLM] Manual Generation using ${config.provider} (${config.model})`);
+
+    // Determine provider
+    if (config.provider === 'xAI') {
+        return generateWithGrok(prompt, config);
+    } else {
+        return generateWithGemini(prompt, config);
     }
 }

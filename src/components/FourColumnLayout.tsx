@@ -201,51 +201,67 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
 
             {/* --- COLUMN 4: Related Media (New, Independent Scroll) --- */}
             {/* Increased width to ~25% (18% + 7%), Distinct styling */}
-            <aside className="w-full lg:w-[25%] h-screen overflow-y-auto bg-gradient-to-b from-[#050505] to-black hide-scrollbar shrink-0 z-20 relative">
+            {/* --- COLUMN 4: Generated Visuals / Related Media --- */}
+            {/* Increased width to ~25% (18% + 7%), Distinct styling */}
+            <aside className="w-full lg:w-[25%] h-screen overflow-hidden bg-gradient-to-b from-[#050505] to-black relative z-20">
                 {/* Gradient Border Left */}
                 <div className="absolute top-0 left-0 w-[1px] h-full bg-gradient-to-b from-yellow-900 via-blue-900/50 to-red-900 opacity-80 z-10"></div>
 
-                <div className="p-6">
-                    <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-8 sticky top-0 bg-[#050505]/95 backdrop-blur-sm py-4 z-10 border-b border-transparent">
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-800 to-blue-800">Related Media</span>
-                    </h3>
+                {activeArticle ? (
+                    <div className="w-full h-full relative group">
+                        {/* Try to load generated HTML */}
+                        <iframe
+                            key={activeArticle.id}
+                            src={`/generated_visuals/${activeArticle.id}.html`}
+                            className="w-full h-full border-none bg-black"
+                            title="Generated Visual"
+                        />
 
-                    <div className="space-y-8">
-                        {/* Placeholder Content Blocks */}
-                        {relatedMedia.map((media, idx) => (
-                            <div key={idx} className="group cursor-pointer">
-                                <div className="aspect-video w-full bg-zinc-900 rounded-sm overflow-hidden relative border border-white/5 group-hover:border-white/10 transition-colors duration-300">
-                                    {/* Placeholder Visual */}
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        {media.type === 'video' ? (
-                                            <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md group-hover:bg-red-900/20 group-hover:border-red-500/30 transition-all">
-                                                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white/70 border-b-[6px] border-b-transparent ml-1"></div>
-                                            </div>
-                                        ) : (
-                                            <span className="text-zinc-800 text-[10px] font-mono group-hover:text-zinc-500 transition-colors">IMG</span>
-                                        )}
-                                    </div>
-
-                                    {/* Mock Image Background with vibrant subtle tint on hover */}
-                                    <div className={`absolute inset-0 bg-gradient-to-br from-zinc-900 to-black opacity-80 group-hover:opacity-60 transition-opacity duration-700`} />
-                                </div>
-                                <div className="mt-3 flex items-baseline gap-2">
-                                    <span className="w-1 h-1 rounded-full bg-zinc-800 group-hover:bg-blue-800 transition-colors"></span>
-                                    <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-wider group-hover:text-zinc-400 transition-colors">
-                                        {media.caption}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* More filler content to enable scrolling */}
-                        {Array.from({ length: 5 }).map((_, i) => (
-                            <div key={`filler-${i}`} className="group cursor-pointer opacity-30 hover:opacity-80 transition-opacity">
-                                <div className="aspect-square w-full bg-zinc-900/20 rounded-sm border border-white/5 mb-2 hover:border-yellow-900/30 transition-colors"></div>
-                            </div>
-                        ))}
+                        {/* Overlay text if needed, or simple fallback if empty? 
+                            Since we can't easily detect 404 inside iframe without JS magic, 
+                            we assume the user will generate content. 
+                            If not, the iframe will show Next.js 404 page which is ugly.
+                            
+                            IMPROVEMENT: We use a small fetch to check existence.
+                        */}
+                        <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            <span className="text-[10px] text-zinc-500 bg-black/50 px-2 py-1 rounded backdrop-blur-sm border border-white/10">
+                                {activeArticle.id}
+                            </span>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="p-6 h-full overflow-y-auto hide-scrollbar">
+                        <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-8 sticky top-0 bg-[#050505]/95 backdrop-blur-sm py-4 z-10 border-b border-transparent">
+                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-800 to-blue-800">Related Media</span>
+                        </h3>
+                        <div className="space-y-8">
+                            {/* Placeholder Content Blocks */}
+                            {relatedMedia.map((media, idx) => (
+                                <div key={idx} className="group cursor-pointer">
+                                    <div className="aspect-video w-full bg-zinc-900 rounded-sm overflow-hidden relative border border-white/5 group-hover:border-white/10 transition-colors duration-300">
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            {media.type === 'video' ? (
+                                                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-md group-hover:bg-red-900/20 group-hover:border-red-500/30 transition-all">
+                                                    <div className="w-0 h-0 border-t-[6px] border-t-transparent border-l-[10px] border-l-white/70 border-b-[6px] border-b-transparent ml-1"></div>
+                                                </div>
+                                            ) : (
+                                                <span className="text-zinc-800 text-[10px] font-mono group-hover:text-zinc-500 transition-colors">IMG</span>
+                                            )}
+                                        </div>
+                                        <div className={`absolute inset-0 bg-gradient-to-br from-zinc-900 to-black opacity-80 group-hover:opacity-60 transition-opacity duration-700`} />
+                                    </div>
+                                    <div className="mt-3 flex items-baseline gap-2">
+                                        <span className="w-1 h-1 rounded-full bg-zinc-800 group-hover:bg-blue-800 transition-colors"></span>
+                                        <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-wider group-hover:text-zinc-400 transition-colors">
+                                            {media.caption}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </aside>
 
         </div>
