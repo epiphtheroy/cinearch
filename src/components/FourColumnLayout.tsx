@@ -55,7 +55,7 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                 if (res.ok) {
                     setHasVisual(true);
                 }
-            } catch (e) {
+            } catch {
                 setHasVisual(false);
             }
         };
