@@ -80,37 +80,50 @@ export async function POST(req: Request) {
             }
         }
 
-        // 4. Construct Full Prompt
-        // Combine User Prompt + Article Content
-        const fullPrompt = `
-You are a creative frontend developer and designer. 
-Your task is to create a stunning, self-contained HTML/CSS visual representation of the following text content.
-The output must be a raw HTML file (no markdown code blocks, just the code).
-It should be visually artistic, using modern CSS (animations, gradients, typography).
-Do not include any external JS unless absolutely necessary (Vanilla CSS preferred).
-Make it responsive.
+        // 4. Analyze Content for YouTube Links (Smart Detection)
+        let videoInstruction = "";
+        // Scan BOTH User Prompt and File Content
+        const combinedText = prompt + "\n" + content;
 
-${officialTrailerKey ? `
-IMPORTANT VIDEO INSTRUCTION:
-I have found the OFFICIAL YouTube Trailer for this film.
-Video ID: "${officialTrailerKey}"
-You MUST embed this video in your design using an iframe.
-Format: <iframe src="https://www.youtube.com/embed/${officialTrailerKey}?rel=0&modestbranding=1" ...></iframe>
-Do NOT use any other Video ID. Use this one.` : `
-If the content discusses a specific film, you may attempt to embed a relevant YouTube trailer/scene if appropriate.
-IMPORTANT:
-1. You MUST find a REAL, VALID YouTube Video ID for the specific film. Do NOT hallucinate IDs.
-2. Use the iframe format: "https://www.youtube.com/embed/[VIDEO_ID]?rel=0&modestbranding=1"
-3. Do NOT use <video> tags.`}
+        // Regex to finding all youtube links - Improved to ignore casing and surrounding chars
+        const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/gi;
+        const matches = [...combinedText.matchAll(ytRegex)];
+        const videoIds = [...new Set(matches.map(m => m[1]))]; // Unique IDs
 
-TARGET CONTENT:
-"${content}"
+        console.log(`[API] Smart Detection: Found ${videoIds.length} unique videos.`);
 
-USER INSTRUCTION:
-${prompt}
+        if (videoIds.length > 0) {
+            videoInstruction = `
+[SYSTEM: 10-VIDEO GRID LAYOUT MODE]
+Analysis: Found ${videoIds.length} YouTube Video Link(s).
+User Goal: Display these videos in a mandatory "10-Row Vertical Grid" layout.
 
-Remember: Output ONLY the HTML code.
-        `;
+MANDATORY HTML STRUCTURE:
+1. Container: A vertical grid or flex column exactly 10 rows high (or scrollable).
+2. Items: 10 distinct "Video Cards".
+3. Content Per Card:
+   - Video Title (Extract from the text above the link).
+   - YouTube Iframe (Use the specific Key).
+
+Specific Iframe Code for each Key (KEYS: ${JSON.stringify(videoIds)}):
+<iframe 
+    src="https://www.youtube.com/embed/{KEY}?autoplay=1&rel=0" 
+    class="w-full aspect-video rounded-lg shadow-lg"
+    ...
+></iframe>
+
+Layout CSS Requirement:
+- Use CSS Grid: 'display: grid; grid-template-rows: repeat(10, auto); gap: 2rem;'
+- OR Flex Column: 'display: flex; flex-direction: column; gap: 2rem;'
+- Background: Dark cinematic theme.
+- Typography: Stylish, sans-serif, white text.
+
+CRITICAL: Do NOT output a plain text list. Output the visual GRID of 10 playable videos.
+`;
+        }
+
+        // 5. Construct Full Prompt
+        const fullPrompt = `${prompt}\n\n${videoInstruction}\n\nTARGET CONTENT (Source of Titles & Context):\n"${content}"`;
 
         // 4. Call AI (Grok)
         // Use custom content generation with specified model
@@ -125,7 +138,28 @@ Remember: Output ONLY the HTML code.
         // 5. Clean Output (Remove ```html ... ``` if present)
         generatedHtml = generatedHtml.replace(/^```html\s*/, '').replace(/\s*```$/, '');
 
-        // 6. Save to File
+        // 6. FORCE POST-PROCESSING: Replace any surviving text links with Iframes
+        // This ensures that even if the AI ignores the instruction, we force the visual.
+        const ytLinkRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s<]{11})/gi;
+
+        // We replace any raw text match of a youtube link with the iframe.
+        // We look for links that are NOT already inside an src="..." attribute (lookbehind logic is hard in JS regex, so we use a simpler heuristic or just replace widely if it looks like a text node).
+        // Safest approach: Replace standalone links.
+        generatedHtml = generatedHtml.replace(ytLinkRegex, (match, videoId) => {
+            return `
+<div class="video-card w-full mb-8">
+    <iframe 
+        src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+        class="w-full aspect-video rounded-lg shadow-2xl border-none"
+        title="Detected Video"
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allowfullscreen
+    ></iframe>
+</div>`;
+        });
+
+        // 7. Save to File
         if (!fs.existsSync(outputDir)) {
             fs.mkdirSync(outputDir, { recursive: true });
         }

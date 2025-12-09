@@ -73,6 +73,34 @@ function getAnyXaiApiKey(): string | undefined {
     return undefined;
 }
 
+// Helper: Scan settings for any valid Gemini key
+function getAnyGeminiApiKey(): string | undefined {
+    try {
+        if (!fs.existsSync(ENV_PATH)) return undefined;
+        const envContent = fs.readFileSync(ENV_PATH, 'utf-8');
+
+        // 1. Direct match
+        const directMatch = envContent.match(/^GEMINI_API_KEY\s*=\s*(.+)$/m);
+        if (directMatch && directMatch[1]) {
+            console.log("[LLM] Found direct GEMINI_API_KEY match");
+            return directMatch[1].trim().replace(/^["']|["']$/g, '');
+        }
+
+        // 2. Check AI_SETTINGS_BASE64
+        const match = envContent.match(/^AI_SETTINGS_BASE64=(.+)$/m);
+        if (match && match[1]) {
+            const jsonStr = Buffer.from(match[1], 'base64').toString('utf-8');
+            const settings: AiSettings = JSON.parse(jsonStr);
+            for (const key in settings) {
+                if ((settings[key].provider === 'Google' || key.toLowerCase() === 'google') && settings[key].apiKey) {
+                    return settings[key].apiKey;
+                }
+            }
+        }
+    } catch { return undefined; }
+    return undefined;
+}
+
 export async function generateMovieContent(movieTitle: string, promptTemplate: string, categoryName: string): Promise<string> {
     const config = getConfig(categoryName);
     console.log(`[LLM] Generating for '${categoryName}' using ${config.provider} (${config.model})`);
@@ -95,7 +123,7 @@ export async function generateMovieContent(movieTitle: string, promptTemplate: s
 
 // Gemini Implementation
 async function generateWithGemini(prompt: string, config: categoryConfig): Promise<string> {
-    const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
+    const apiKey = config.apiKey || process.env.GEMINI_API_KEY || getAnyGeminiApiKey();
     if (!apiKey) throw new Error("Google API Key not found (Env or Config)");
 
     const genAI = new GoogleGenerativeAI(apiKey);

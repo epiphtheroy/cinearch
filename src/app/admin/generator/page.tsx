@@ -15,7 +15,7 @@ export default function GeneratorPage() {
 
     const MODELS: Record<Provider, string[]> = {
         'xAI': ['grok-4-1-fast-reasoning', 'grok-4-0709', 'grok-beta', 'grok-2-vision-1212'],
-        'Google': ['gemini-1.5-pro-latest', 'gemini-1.5-flash', 'gemini-1.0-pro']
+        'Google': ['gemini-2.5-flash-lite-preview-09-2025', 'gemini-1.5-pro-latest', 'gemini-1.5-flash', 'gemini-1.0-pro']
     };
 
     useEffect(() => {
