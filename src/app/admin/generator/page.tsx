@@ -4,15 +4,16 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 export default function GeneratorPage() {
+    type Provider = 'xAI' | 'Google';
     const [files, setFiles] = useState<string[]>([]);
     const [selectedFile, setSelectedFile] = useState('');
     const [prompt, setPrompt] = useState('');
-    const [provider, setProvider] = useState('xAI');
+    const [provider, setProvider] = useState<Provider>('xAI');
     const [model, setModel] = useState('grok-4-1-fast-reasoning');
     const [loading, setLoading] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
 
-    const MODELS = {
+    const MODELS: Record<Provider, string[]> = {
         'xAI': ['grok-4-1-fast-reasoning', 'grok-beta', 'grok-2-vision-1212'],
         'Google': ['gemini-1.5-pro-latest', 'gemini-1.5-flash', 'gemini-1.0-pro']
     };
@@ -31,9 +32,8 @@ export default function GeneratorPage() {
     }, []);
 
     // Update model default when provider changes
-    const handleProviderChange = (newProvider: string) => {
+    const handleProviderChange = (newProvider: Provider) => {
         setProvider(newProvider);
-        // @ts-ignore
         setModel(MODELS[newProvider][0]);
     };
 
@@ -120,7 +120,7 @@ export default function GeneratorPage() {
                                 <select
                                     className="w-full bg-black border border-gray-700 rounded-md p-3 text-white outline-none"
                                     value={provider}
-                                    onChange={(e) => handleProviderChange(e.target.value)}
+                                    onChange={(e) => handleProviderChange(e.target.value as Provider)}
                                 >
                                     <option value="xAI">xAI (Grok)</option>
                                     <option value="Google">Google (Gemini)</option>
@@ -134,7 +134,6 @@ export default function GeneratorPage() {
                                     value={model}
                                     onChange={(e) => setModel(e.target.value)}
                                 >
-                                    {/* @ts-ignore */}
                                     {MODELS[provider].map((m: string) => (
                                         <option key={m} value={m}>{m}</option>
                                     ))}
