@@ -10,17 +10,9 @@ export async function POST(_request: Request) {
         await execAsync('/usr/bin/git add .');
 
         // 2. Git Commit
-        // We need to handle the case where there are no changes to commit
-        try {
-            await execAsync('/usr/bin/git commit -m "Auto-deploy from Admin Dashboard"');
-        } catch (error: any) {
-            if (error.stdout && error.stdout.includes('nothing to commit')) {
-                // Continue to push even if nothing to commit
-                console.log("Nothing to commit, proceeding to push...");
-            } else {
-                throw error;
-            }
-        }
+        // Force a commit even if there are no changes to trigger Netlify build
+        const timestamp = new Date().toISOString();
+        await execAsync(`/usr/bin/git commit --allow-empty -m "Auto-deploy from Admin Dashboard: ${timestamp}"`);
 
         // 3. Git Push
         const { stdout, stderr } = await execAsync('/usr/bin/git push');
