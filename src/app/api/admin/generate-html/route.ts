@@ -149,11 +149,14 @@ CRITICAL: Do NOT output a plain text list. Output the visual GRID of 10 playable
             return `
 <div class="video-card w-full mb-8">
     <iframe 
-        src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" 
+        width="100%" 
+        height="315"
+        src="https://www.youtube.com/embed/${videoId}?rel=0" 
         class="w-full aspect-video rounded-lg shadow-2xl border-none"
         title="Detected Video"
         frameborder="0" 
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        referrerpolicy="strict-origin-when-cross-origin" 
         allowfullscreen
     ></iframe>
 </div>`;
