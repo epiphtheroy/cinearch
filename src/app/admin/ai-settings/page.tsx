@@ -71,7 +71,7 @@ export default function AiSettingsPage() {
             } else {
                 setMessage('Failed to save settings.');
             }
-        } catch (_error) {
+        } catch {
             setMessage('Error saving settings.');
         } finally {
             setSaving(false);
