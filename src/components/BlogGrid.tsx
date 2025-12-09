@@ -118,7 +118,7 @@ export default function BlogGrid({ initialArticles }: { initialArticles: Article
 
                 {articles.length === 0 && (
                     <div className="text-center py-20 text-gray-400">
-                        <p className="text-lg">No articles found matching "{searchTerm}"</p>
+                        <p className="text-lg">No articles found matching &quot;{searchTerm}&quot;</p>
                     </div>
                 )}
             </div>
