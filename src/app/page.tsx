@@ -15,7 +15,7 @@ async function getMovies() {
 
         querySnapshot.docs.forEach(doc => {
             const data = doc.data();
-            const title = data.title;
+            // const title = data.title; // Removed to fix lint error
 
             if (!uniqueMoviesMap.has(doc.id)) {
                 uniqueMoviesMap.set(doc.id, {
