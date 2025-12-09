@@ -151,7 +151,7 @@ CRITICAL: Do NOT output a plain text list. Output the visual GRID of 10 playable
     <iframe 
         width="100%" 
         height="315"
-        src="https://www.youtube.com/embed/${videoId}?rel=0" 
+        src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0&origin=http://localhost:3000" 
         class="w-full aspect-video rounded-lg shadow-2xl border-none"
         title="Detected Video"
         frameborder="0" 

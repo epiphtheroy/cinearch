@@ -236,7 +236,8 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                             src={`/generated_visuals/${activeArticle.id}.html`}
                             className="w-full h-full border-none bg-black"
                             title="Generated Visual"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerPolicy="strict-origin-when-cross-origin"
                             allowFullScreen
                         />
                         <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
