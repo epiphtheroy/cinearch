@@ -17,7 +17,9 @@ async function getArticles() {
                 content: data.content || '',
                 categoryName: data.categoryName || 'Uncategorized',
                 movieIdStr: data.movieIdStr || '',
-                updatedAt: data.updatedAt?.toDate?.().toISOString() || new Date().toISOString()
+                updatedAt: data.updatedAt?.toDate?.().toISOString() || new Date().toISOString(),
+                slug: data.slug || '',
+                lang: data.lang || 'en'
             };
         });
     } catch (error) {
