@@ -70,7 +70,7 @@ export async function POST(_request: Request) {
                         const promptContent = await getPromptContent(promptDocId);
 
                         // 2. Generate Content
-                        const generatedMarkdown = await generateMovieContent(movieTitle, promptContent);
+                        const generatedMarkdown = await generateMovieContent(movieTitle, promptContent, catName);
 
                         // 3. Save File
                         // Format: [movieId]Title_[CATEGORY].md

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function AdminPage() {
     const [loading, setLoading] = useState(false);
@@ -122,6 +123,13 @@ export default function AdminPage() {
             <div className="bg-gray-800 p-6 rounded-lg shadow-lg max-w-3xl">
                 <h2 className="text-xl font-semibold mb-4">Content Controls</h2>
                 <div className="flex flex-wrap gap-4 mb-8">
+                    <Link
+                        href="/admin/ai-settings"
+                        className="px-6 py-3 rounded-md font-medium transition-colors border border-purple-500/30 bg-purple-600/20 hover:bg-purple-600 text-purple-100 hover:text-white flex items-center justify-center text-center"
+                    >
+                        ⚙️ AI Config
+                    </Link>
+
                     <button
                         onClick={handleGenerate}
                         disabled={loading}
