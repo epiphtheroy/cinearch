@@ -277,14 +277,12 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
 
             {/* --- COLUMN 2: Navigation (Sticky) --- */}
             {/* Width: ~8% */}
-            <nav className="w-full lg:w-[8%] h-screen overflow-y-auto bg-gradient-to-b from-zinc-950 to-zinc-900/50 hide-scrollbar z-20 shrink-0 relative">
-                {/* Gradient Border Right */}
-                <div className="absolute top-0 right-0 w-[1px] h-full bg-gradient-to-b from-blue-900 via-red-900/50 to-yellow-900 opacity-80 pointer-events-none"></div>
+            <nav className="w-full lg:w-[8%] h-screen overflow-y-auto bg-black hide-scrollbar z-20 shrink-0 relative border-r border-white/5">
 
-                <div className="py-6 flex flex-col">
-                    <h3 className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest mb-6 px-3">Index</h3>
+                <div className="py-8 flex flex-col px-1">
+                    <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6 px-3 border-b border-zinc-900 pb-2">Index</h3>
 
-                    <ul className="space-y-1 w-full">
+                    <ul className="space-y-2 w-full">
                         {BATCH_CATEGORIES.map((category) => {
                             const matchingArticle = articles.find(a =>
                                 (a.categoryTitle || '').toUpperCase() === category.toUpperCase()
@@ -299,19 +297,37 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                                         disabled={!hasContent}
                                         title={category}
                                         className={clsx(
-                                            "w-full text-left px-3 py-2 text-xs transition-all duration-300 border-l-[2px] flex items-center gap-2 group relative",
+                                            "w-full text-left px-4 py-3 text-sm transition-all duration-300 flex items-center gap-3 group relative rounded-r-md",
                                             isActive
-                                                ? "border-red-500 text-white bg-white/5"
+                                                ? "text-white bg-zinc-900 translate-x-1"
                                                 : hasContent
-                                                    ? "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                                                    : "border-transparent text-zinc-700 cursor-default"
+                                                    ? "text-zinc-500 hover:text-white hover:bg-zinc-900/50 hover:translate-x-1"
+                                                    : "text-zinc-800 cursor-default"
                                         )}
                                     >
+                                        {/* Dynamic Indicator */}
                                         <div className={clsx(
-                                            "w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300",
-                                            isActive ? "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]" : hasContent ? "bg-zinc-600 group-hover:bg-zinc-400" : "bg-transparent"
+                                            "w-1 h-full absolute left-0 top-0 transition-all duration-300",
+                                            isActive ? "bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)]" : "bg-transparent group-hover:bg-zinc-700"
                                         )} />
-                                        <span className={clsx("truncate", !hasContent && "opacity-50")}>{category}</span>
+
+                                        {/* Dot */}
+                                        <div className={clsx(
+                                            "w-2 h-2 rounded-full shrink-0 transition-all duration-500",
+                                            isActive
+                                                ? "bg-red-500 scale-125"
+                                                : hasContent
+                                                    ? "bg-zinc-800 group-hover:bg-zinc-400 group-hover:scale-110"
+                                                    : "bg-zinc-900"
+                                        )} />
+
+                                        <span className={clsx(
+                                            "truncate font-medium tracking-wide transition-all duration-300",
+                                            isActive && "text-red-500",
+                                            !hasContent && "opacity-30 blur-[0.5px]"
+                                        )}>
+                                            {category}
+                                        </span>
                                     </button>
                                 </li>
                             );
