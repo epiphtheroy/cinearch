@@ -8,6 +8,8 @@ import crypto from 'crypto'; // Added for hashing
 
 import { getAdminDb } from '@/lib/firebaseAdmin';
 
+import { generateVisualHtml } from '@/lib/visualGenerator';
+
 const WATCH_DIR = path.join(process.cwd(), 'source_md');
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+?)_\[(?<catTitle>.+)\]\.md$/;
@@ -75,6 +77,23 @@ export async function POST() {
                 const { data: frontmatter, content } = matter(fileContent);
                 const docId = `movie_${movieId}`;
 
+                // --- NEW: Auto-Generate Visual HTML (AI) ---
+                let visualHtml = '';
+                try {
+                    console.log(`[Sync] Generating visual for ${movieTitle}...`);
+                    // Use Gemini 1.5 Flash for speed/cost balance, or user preference if available
+                    visualHtml = await generateVisualHtml({
+                        content: content,
+                        provider: 'Google', // Defaulting to Google as per recent user usage
+                        model: 'gemini-1.5-flash'
+                    });
+                    console.log(`[Sync] Visual generated (Length: ${visualHtml.length})`);
+                } catch (genError: any) {
+                    console.error(`[Sync] AI Generation Failed for ${movieTitle}:`, genError.message);
+                    // Don't fail the sync, just leave visualHtml empty (or keep previous if we fetched it, but here we overwrite)
+                }
+                // -------------------------------------------
+
                 // Fetch TMDB Metadata only if we are actually updating
                 let metadata: any = {};
                 if (TMDB_API_KEY) {
@@ -109,7 +128,9 @@ export async function POST() {
                 }, { merge: true });
 
                 const articleRef = db.collection('articles').doc(articleId);
-                batch.set(articleRef, {
+
+                // Construct payload
+                const articlePayload: any = {
                     movieIdStr: movieId,
                     movieTitle: frontmatter.movieTitle || movieTitle,
                     title: frontmatter.title || 'Untitled',
@@ -120,12 +141,20 @@ export async function POST() {
                     content: content.trim(),
                     fileHash: currentHash, // Save new hash
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
+                };
+
+                // Only update visualHtml if we successfully generated it, OR if we want to overwrite. 
+                // Since this is a "Sync" and the file changed, we assume we want a fresh visual matching the new content.
+                if (visualHtml) {
+                    articlePayload.visualHtml = visualHtml;
+                }
+
+                batch.set(articleRef, articlePayload, { merge: true });
 
                 await batch.commit();
 
                 uploadedCount++;
-                results.push({ file, status: 'uploaded', title: movieTitle });
+                results.push({ file, status: 'uploaded', title: movieTitle, visualGenerated: !!visualHtml });
                 console.log(`Uploaded changed file: ${file}`);
 
             } catch (error: any) {

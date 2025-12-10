@@ -12,6 +12,7 @@ interface Article {
     title: string;
     content: string;
     categoryTitle?: string;
+    visualHtml?: string; // NEW: Stored HTML
     // ... other metadata
 }
 
@@ -40,31 +41,8 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
 
     const activeArticle = articles.find(a => a.id === activeArticleId);
 
-    const [hasVisual, setHasVisual] = useState<boolean>(false);
-
-    // Construct Firebase Storage URL
-    const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-    const visualUrl = bucketName
-        ? `https://storage.googleapis.com/${bucketName}/generated_visuals/${activeArticle?.id}.html`
-        : `/generated_visuals/${activeArticle?.id}.html`;
-
-    useEffect(() => {
-        if (!activeArticleId) return;
-
-        const checkVisual = async () => {
-            setHasVisual(false);
-            try {
-                // Check if file exists on Storage (HEAD request works if public)
-                const res = await fetch(visualUrl, { method: 'HEAD' });
-                if (res.ok) {
-                    setHasVisual(true);
-                }
-            } catch {
-                setHasVisual(false);
-            }
-        };
-        checkVisual();
-    }, [visualUrl, activeArticleId]);
+    // Simple check: Does the article have the visual HTML string?
+    const hasVisual = !!(activeArticle && activeArticle.visualHtml && activeArticle.visualHtml.trim().length > 0);
 
     // Placeholder data for the new Media Column
     const relatedMedia = [
@@ -237,7 +215,7 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                         {/* Valid Generated HTML Exists */}
                         <iframe
                             key={activeArticle.id}
-                            src={visualUrl}
+                            srcDoc={activeArticle.visualHtml}
                             className="w-full h-full border-none bg-black"
                             title="Generated Visual"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
