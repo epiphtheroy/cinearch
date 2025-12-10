@@ -103,13 +103,70 @@ export default function GeneratorPage() {
 
                         {/* Prompt Input */}
                         <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
-                            <label className="block text-sm font-medium text-gray-400 mb-2">Visual Prompt</label>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="block text-sm font-medium text-gray-400">Visual Prompt</label>
+                                <select
+                                    className="bg-black border border-gray-700 text-xs text-gray-300 rounded px-2 py-1 outline-none hover:border-gray-500 transition-colors"
+                                    onChange={(e) => {
+                                        if (e.target.value) setPrompt(e.target.value);
+                                    }}
+                                    defaultValue=""
+                                >
+                                    <option value="" disabled>Load Template...</option>
+                                    <option value={`Role Act as an expert Web Researcher and HTML Developer.
+
+Task Your goal is to curate a list of EXACTLY 10 highly relevant YouTube videos based on the provided text. Requirement:
+
+Distinct Content: The 10 videos must be distinct from each other (e.g., mix of official trailers, specific clips, interviews, analysis, or related works). Do not repeat the exact same video.
+
+Display Format: For each of the 10 items, you must display the Approximate Video Title (as text) followed immediately by the Iframe Embed Code.
+
+Input Text [INSERT YOUR TEXT HERE]
+
+Step-by-Step Process
+
+Analyze & Expand: Identify key entities in the text. If there are fewer than 10 direct references, infer related major works or genre classics to reach a target of 10.
+
+Search & Verify: Find 10 working YouTube videos. Ensure the Video IDs are real.
+
+Format: Output the result in HTML.
+
+Strict Constraints & Formatting Rules
+
+Quantity: EXACTLY 10 sets of (Title + Video).
+
+Embed URL: Use https://www.youtube.com/embed/[VIDEO_ID]
+
+Structure: Use the following HTML template for each item:
+
+HTML
+
+<div style="margin-bottom: 30px;">
+    <h3>[Approximate Video Title]</h3>
+    <iframe 
+      width="450" 
+      height="253" 
+      src="https://www.youtube.com/embed/[REAL_VIDEO_ID]" 
+      title="[Video Title]" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+      referrerpolicy="strict-origin-when-cross-origin" 
+      allowfullscreen>
+    </iframe>
+</div>
+Output Provide ONLY the raw HTML code inside a code block. No conversational text.
+
+Execution Generate the HTML output now based on the logic above.`}>YouTube 10-Grid Generator</option>
+                                    <option value="Create a dark cyberpunk terminal interface displaying the text content. Use green monospace fonts, scanlines, and a flickering cursor effect.">Cyberpunk Terminal</option>
+                                    <option value="Create a minimalist, high-fashion editorial layout. Use large serif typography, copious whitespace, and subtle parallax scrolling effects.">Editorial Layout</option>
+                                </select>
+                            </div>
                             <textarea
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
-                                rows={6}
-                                className="w-full bg-black border border-gray-700 rounded-md p-3 text-white focus:ring-2 focus:ring-purple-500 outline-none font-mono text-sm"
-                                placeholder="Describe how the content should be visualized. E.g., 'Create a dark cyberpunk terminal interface displaying the text...'"
+                                rows={10}
+                                className="w-full bg-black border border-gray-700 rounded-md p-3 text-white focus:ring-2 focus:ring-purple-500 outline-none font-mono text-xs leading-relaxed"
+                                placeholder="Describe how the content should be visualized..."
                             />
                         </div>
 

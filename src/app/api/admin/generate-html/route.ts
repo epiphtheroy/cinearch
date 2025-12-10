@@ -197,30 +197,52 @@ CRITICAL: Do NOT output a plain text list. Output the visual GRID of 10 playable
         console.log(`[API] Target Bucket (Env): ${bucketName}`);
 
         if (!bucketName) {
-            throw new Error('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not defined in environment variables.');
-        }
-
-        // AUTO-CORRECTION: Admin SDK often requires the GCS bucket name (e.g., project-id.appspot.com)
-        // Client SDKs use project-id.firebasestorage.app. If the env var is the client one, fix it.
-        if (bucketName.includes('firebasestorage.app')) {
-            const correctedName = bucketName.replace('.firebasestorage.app', '.appspot.com');
-            console.log(`[API] Auto-Correcting bucket name implementation: ${bucketName} -> ${correctedName}`);
-            bucketName = correctedName;
-        }
-
-        const bucket = storage.bucket(bucketName);
-        const file = bucket.file(`generated_visuals/${outputFilename}`);
-
-        await file.save(generatedHtml, {
-            metadata: {
-                contentType: 'text/html',
-                cacheControl: 'public, max-age=3600'
+            // Fallback: Try to list and pick first
+            console.log('[API] No bucket env var, attempting discovery...');
+        } else {
+            // AUTO-CORRECTION (Keep existing logic)
+            if (bucketName.includes('firebasestorage.app')) {
+                bucketName = bucketName.replace('.firebasestorage.app', '.appspot.com');
             }
-        });
+        }
 
-        // Make the file publicly accessible
-        await file.makePublic();
-        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+        const runUpload = async (bName: string) => {
+            const bucket = storage.bucket(bName);
+            const file = bucket.file(`generated_visuals/${outputFilename}`);
+            await file.save(generatedHtml, {
+                metadata: { contentType: 'text/html', cacheControl: 'public, max-age=3600' }
+            });
+            await file.makePublic();
+            return `https://storage.googleapis.com/${bName}/${file.name}`;
+        };
+
+        let publicUrl = '';
+        try {
+            if (bucketName) {
+                publicUrl = await runUpload(bucketName);
+            } else {
+                throw new Error('No bucket name');
+            }
+        } catch (error: any) {
+            console.warn(`[API] Upload failed with bucket '${bucketName}': ${error.message}`);
+
+            // Auto-Discovery Fallback
+            if (error.code === 404 || error.message.includes('bucket does not exist') || error.message.includes('No bucket name')) {
+                console.log('[API] Attempting to discover available buckets...');
+                // admin.storage() returns Service, not GCS Client. Pivot via bucket.
+                const [buckets] = await storage.bucket('dummy').storage.getBuckets();
+                if (buckets && buckets.length > 0) {
+                    const discoveredBucketName = buckets[0].name;
+                    console.log(`[API] Discovered valid bucket: ${discoveredBucketName}`);
+                    publicUrl = await runUpload(discoveredBucketName);
+                } else {
+                    throw new Error('No valid storage buckets found in this Firebase project.');
+                }
+            } else {
+                throw error;
+            }
+        }
+
         console.log(`[API] File uploaded to: ${publicUrl}`);
 
         return NextResponse.json({
