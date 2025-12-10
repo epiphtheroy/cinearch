@@ -94,7 +94,7 @@ export async function POST(req: Request) {
                 const docId = `movie_${movieId}`;
 
                 // --- VISUAL GENERATION REMOVED ---
-                let visualHtml = '';
+                const visualHtml = '';
                 // ---------------------------------
 
                 // Fetch TMDB Metadata only if we are actually updating
