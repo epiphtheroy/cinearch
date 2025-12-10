@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { generateCustomContent } from '@/lib/llm'; // Reusing existing LLM wrapper
 import matter from 'gray-matter';
+import { getAdminStorage } from '@/lib/firebaseAdmin';
 // ... existing imports
 
 export async function GET() {
@@ -54,8 +55,6 @@ export async function POST(req: Request) {
         const { movieId, catId } = match.groups;
         const articleId = `article_${movieId}_${catId}`;
         const outputFilename = `${articleId}.html`;
-        const outputDir = path.join(process.cwd(), 'public', 'generated_visuals');
-        const outputPath = path.join(outputDir, outputFilename);
 
         // 3. Fetch Official Trailer from TMDB (to prevent AI Hallucinations)
         let officialTrailerKey = null;
@@ -138,14 +137,21 @@ CRITICAL: Do NOT output a plain text list. Output the visual GRID of 10 playable
         // 5. Clean Output (Remove ```html ... ``` if present)
         generatedHtml = generatedHtml.replace(/^```html\s*/, '').replace(/\s*```$/, '');
 
-        // 6. FORCE POST-PROCESSING: Replace any surviving text links with Iframes
-        // This ensures that even if the AI ignores the instruction, we force the visual.
+        // 6a. FORCE POST-PROCESSING (Text Links): Replace any surviving text links with Iframes
         const ytLinkRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s<]{11})/gi;
 
-        // We replace any raw text match of a youtube link with the iframe.
-        // We look for links that are NOT already inside an src="..." attribute (lookbehind logic is hard in JS regex, so we use a simpler heuristic or just replace widely if it looks like a text node).
-        // Safest approach: Replace standalone links.
-        generatedHtml = generatedHtml.replace(ytLinkRegex, (match, videoId) => {
+        // We replace any raw text match of a youtube link with the iframe (ignoring if it's already in quotes/src to avoid double-processing, though imperfect regex)
+        // Improved Regex to avoid matching inside src="..."
+        // Actually, simpler strategy:
+        // 1. Let text replacement happen (might result in nesting if inside src).
+        // 2. Then run a "Cleaner" pass to fix nested iframes or just parse iframes.
+
+        // BETTER STRATEGY: 
+        // 1. Detect if the AI already made iframes.
+        // 2. If so, Standardize them.
+
+        const iframeRegex = /<iframe[^>]+src=["'](?:https?:)?\/\/(?:www\.)?youtube\.com\/embed\/([^"'\?]+)[^"']*["'][^>]*>.*?<\/iframe>/gi;
+        generatedHtml = generatedHtml.replace(iframeRegex, (match, videoId) => {
             return `
 <div class="video-card w-full mb-8">
     <iframe 
@@ -162,16 +168,50 @@ CRITICAL: Do NOT output a plain text list. Output the visual GRID of 10 playable
 </div>`;
         });
 
-        // 7. Save to File
-        if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
-        }
-        fs.writeFileSync(outputPath, generatedHtml);
+        // 6b. Fallback: If no iframes matched, try replacing text links (careful not to double up)
+        // Since we ran iframe replacement first, any remaining youtube links are likely text.
+        generatedHtml = generatedHtml.replace(ytLinkRegex, (match, videoId) => {
+            // Check if this match is part of the standardized iframe we just made
+            if (generatedHtml.includes(`embed/${videoId}`)) return match; // Already handled
+
+            return `
+<div class="video-card w-full mb-8">
+    <iframe 
+        width="100%" 
+        height="315"
+        src="https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&autoplay=0&origin=http://localhost:3000" 
+        class="w-full aspect-video rounded-lg shadow-2xl border-none"
+        title="Detected Video"
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+        referrerpolicy="strict-origin-when-cross-origin" 
+        allowfullscreen
+    ></iframe>
+</div>`;
+        });
+
+        // 7. Save to Firebase Storage (Serverless Compatible)
+        // Instead of local fs.writeFileSync (which fails on Netlify/Vercel)
+        console.log('[API] Uploading to Firebase Storage...');
+        const bucket = getAdminStorage().bucket();
+        const file = bucket.file(`generated_visuals/${outputFilename}`);
+
+        await file.save(generatedHtml, {
+            metadata: {
+                contentType: 'text/html',
+                cacheControl: 'public, max-age=3600'
+            }
+        });
+
+        // Make the file publicly accessible
+        await file.makePublic();
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${file.name}`;
+        console.log(`[API] File uploaded to: ${publicUrl}`);
 
         return NextResponse.json({
             success: true,
-            message: 'HTML Generated Successfully',
-            path: `/generated_visuals/${outputFilename}`,
+            message: 'HTML Generated & Uploaded Successfully',
+            path: publicUrl,
             articleId: articleId
         });
 
