@@ -7,8 +7,9 @@ import axios from 'axios';
 import crypto from 'crypto'; // Added for hashing
 
 import { getAdminDb } from '@/lib/firebaseAdmin';
+import { extractKeywords } from '@/lib/gemini';
 
-import { generateVisualHtml } from '@/lib/visualGenerator';
+
 
 const WATCH_DIR = path.join(process.cwd(), 'source_md');
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -19,9 +20,12 @@ function computeHash(content: string): string {
     return crypto.createHash('md5').update(content).digest('hex');
 }
 
-export async function POST() {
+export async function POST(req: Request) {
     try {
-        console.log(`Starting smart sync from: ${WATCH_DIR}`);
+        const { searchParams } = new URL(req.url);
+        const force = searchParams.get('force') === 'true';
+
+        console.log(`Starting smart sync from: ${WATCH_DIR} (Force: ${force})`);
         const db = getAdminDb();
 
         if (!fs.existsSync(WATCH_DIR)) {
@@ -33,12 +37,16 @@ export async function POST() {
         const files = fs.readdirSync(WATCH_DIR);
         const results = [];
 
-        // 1. Fetch all existing articles' fileHash to minimize writes
-        // Projection: only id and fileHash
-        const snapshot = await db.collection('articles').select('fileHash').get();
-        const existingHashes: Record<string, string> = {};
+        // 1. Fetch all existing articles' fileHash and visualHtml presence
+        const snapshot = await db.collection('articles').select('fileHash', 'visualHtml').get();
+        const existingData: Record<string, { hash: string, hasVisual: boolean }> = {};
+
         snapshot.docs.forEach(doc => {
-            existingHashes[doc.id] = doc.data().fileHash || '';
+            const data = doc.data();
+            existingData[doc.id] = {
+                hash: data.fileHash || '',
+                hasVisual: !!(data.visualHtml && data.visualHtml.length > 0)
+            };
         });
 
         console.log(`Found ${snapshot.size} existing articles in DB.`);
@@ -67,32 +75,27 @@ export async function POST() {
                 const fileContent = fs.readFileSync(filePath, 'utf8');
                 const currentHash = computeHash(fileContent);
 
-                // Check change
-                if (existingHashes[articleId] === currentHash) {
+                // Check existing state
+                const currentDbState = existingData[articleId];
+
+                // SKIP CRITERIA:
+                // 1. Not Forced
+                // 2. Hash Matches (Content unchanged)
+                // 3. Visual HTML Exists (Already generated)
+                if (!force && currentDbState && currentDbState.hash === currentHash && currentDbState.hasVisual) {
                     skippedCount++;
                     continue; // Skip processing
                 }
+
+                console.log(`Processing ${file} (Unchanged: ${currentDbState?.hash === currentHash}, Missing Visual: ${!currentDbState?.hasVisual}, Force: ${force})`);
 
                 // If Hash is different or new, Process it
                 const { data: frontmatter, content } = matter(fileContent);
                 const docId = `movie_${movieId}`;
 
-                // --- NEW: Auto-Generate Visual HTML (AI) ---
+                // --- VISUAL GENERATION REMOVED ---
                 let visualHtml = '';
-                try {
-                    console.log(`[Sync] Generating visual for ${movieTitle}...`);
-                    // Use Gemini 1.5 Flash for speed/cost balance, or user preference if available
-                    visualHtml = await generateVisualHtml({
-                        content: content,
-                        provider: 'Google', // Defaulting to Google as per recent user usage
-                        model: 'gemini-1.5-flash'
-                    });
-                    console.log(`[Sync] Visual generated (Length: ${visualHtml.length})`);
-                } catch (genError: any) {
-                    console.error(`[Sync] AI Generation Failed for ${movieTitle}:`, genError.message);
-                    // Don't fail the sync, just leave visualHtml empty (or keep previous if we fetched it, but here we overwrite)
-                }
-                // -------------------------------------------
+                // ---------------------------------
 
                 // Fetch TMDB Metadata only if we are actually updating
                 let metadata: any = {};
@@ -130,6 +133,9 @@ export async function POST() {
                 const articleRef = db.collection('articles').doc(articleId);
 
                 // Construct payload
+                // Generate Keywords using AI
+                const keywords = await extractKeywords(content);
+
                 const articlePayload: any = {
                     movieIdStr: movieId,
                     movieTitle: frontmatter.movieTitle || movieTitle,
@@ -140,14 +146,12 @@ export async function POST() {
                     lang: frontmatter.lang || 'en',
                     content: content.trim(),
                     fileHash: currentHash, // Save new hash
+                    keywords: keywords, // Save AI keywords
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
                 };
 
-                // Only update visualHtml if we successfully generated it, OR if we want to overwrite. 
-                // Since this is a "Sync" and the file changed, we assume we want a fresh visual matching the new content.
-                if (visualHtml) {
-                    articlePayload.visualHtml = visualHtml;
-                }
+                // Visual HTML generation logic has been removed.
+                // We no longer update 'visualHtml'.
 
                 batch.set(articleRef, articlePayload, { merge: true });
 
