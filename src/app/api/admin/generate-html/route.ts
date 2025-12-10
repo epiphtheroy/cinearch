@@ -191,9 +191,24 @@ CRITICAL: Do NOT output a plain text list. Output the visual GRID of 10 playable
         });
 
         // 7. Save to Firebase Storage (Serverless Compatible)
-        // Instead of local fs.writeFileSync (which fails on Netlify/Vercel)
         console.log('[API] Uploading to Firebase Storage...');
-        const bucket = getAdminStorage().bucket();
+        const storage = getAdminStorage();
+        let bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
+        console.log(`[API] Target Bucket (Env): ${bucketName}`);
+
+        if (!bucketName) {
+            throw new Error('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET is not defined in environment variables.');
+        }
+
+        // AUTO-CORRECTION: Admin SDK often requires the GCS bucket name (e.g., project-id.appspot.com)
+        // Client SDKs use project-id.firebasestorage.app. If the env var is the client one, fix it.
+        if (bucketName.includes('firebasestorage.app')) {
+            const correctedName = bucketName.replace('.firebasestorage.app', '.appspot.com');
+            console.log(`[API] Auto-Correcting bucket name implementation: ${bucketName} -> ${correctedName}`);
+            bucketName = correctedName;
+        }
+
+        const bucket = storage.bucket(bucketName);
         const file = bucket.file(`generated_visuals/${outputFilename}`);
 
         await file.save(generatedHtml, {
