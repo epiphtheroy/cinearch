@@ -16,12 +16,15 @@ const BATCH_CATEGORIES = [
 // Existing categories from prompts.ts (Legacy)
 const LEGACY_CATEGORIES = ["location", "signifier"];
 
-const ALL_CATEGORIES = [...LEGACY_CATEGORIES, ...BATCH_CATEGORIES];
+const SPECIAL_CATEGORIES = ["TRANSLATION"];
+
+const ALL_CATEGORIES = [...SPECIAL_CATEGORIES, ...LEGACY_CATEGORIES, ...BATCH_CATEGORIES];
 
 interface CategoryConfig {
     provider: 'Google' | 'xAI';
     model: string;
     apiKey?: string;
+    systemPrompt?: string;
 }
 
 interface AiSettings {
@@ -150,6 +153,19 @@ export default function AiSettingsPage() {
                                             className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-sm focus:border-red-500 focus:outline-none placeholder-gray-600"
                                         />
                                     </div>
+
+                                    {/* System Prompt for Translation */}
+                                    {category === 'TRANSLATION' && (
+                                        <div className="col-span-12 mt-2">
+                                            <label className="block text-xs uppercase text-gray-500 mb-1">System Prompt (Translation Only)</label>
+                                            <textarea
+                                                value={config.systemPrompt || ''}
+                                                onChange={(e) => handleChange(category, 'systemPrompt', e.target.value)}
+                                                placeholder="e.g. Translate this to natural Korean..."
+                                                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-sm focus:border-red-500 focus:outline-none placeholder-gray-600 min-h-[80px]"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}

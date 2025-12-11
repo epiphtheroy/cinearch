@@ -8,6 +8,7 @@ interface categoryConfig {
     provider: 'Google' | 'xAI';
     model: string;
     apiKey?: string;
+    systemPrompt?: string;
 }
 
 interface AiSettings {
@@ -17,7 +18,7 @@ interface AiSettings {
 const ENV_PATH = path.join(process.cwd(), '.env.local');
 
 // Helper to get config safely
-function getConfig(categoryName: string): categoryConfig {
+export function getAiConfig(categoryName: string): categoryConfig {
     try {
         if (!fs.existsSync(ENV_PATH)) return { provider: 'Google', model: 'gemini-1.5-pro-latest' };
 
@@ -102,7 +103,7 @@ function getAnyGeminiApiKey(): string | undefined {
 }
 
 export async function generateMovieContent(movieTitle: string, promptTemplate: string, categoryName: string): Promise<string> {
-    const config = getConfig(categoryName);
+    const config = getAiConfig(categoryName);
     console.log(`[LLM] Generating for '${categoryName}' using ${config.provider} (${config.model})`);
 
     // Construct Prompt
