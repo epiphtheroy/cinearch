@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getMovieQueue, getPromptContent, updateRowStatus } from '@/lib/google';
-import { generateMovieContent } from '@/lib/llm';
+import { generateMovieContent, generateCustomContent, getAiConfig } from '@/lib/llm';
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios'; // Added axios
@@ -204,7 +204,7 @@ lang: en
                         // If I modify `generateMovieContent` to NOT append title if it's missing in template?
 
                         try {
-                            const { getAiConfig, generateCustomContent } = require('@/lib/llm');
+                            // Helper Require Removed - Using top-level import
                             const translationConfig = getAiConfig('TRANSLATION');
                             const systemPrompt = translationConfig.systemPrompt || "Translate the following movie content into natural, professional Korean. Maintain the original tone and formatting.";
 
