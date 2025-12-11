@@ -135,76 +135,7 @@ lang: en
                         // --- STEP 2: Translate to Korean ---
                         console.log(`[Generate] Translating to KO for ${movieTitle} [${catName}]...`);
 
-                        // Fetch Translation Config (implicitly handled by generateCustomContent/generateMovieContent if we use a special category or helper)
-                        // But here we need to use 'TRANSLATION' config specifically.
-                        // We need to import getConfig from llm or similar, but it's not exported.
-                        // Let's use generateMovieContent but pass 'TRANSLATION' as category and construct a prompt.
-
-                        // We can reuse generateMovieContent logic partially or import generateCustomContent if allowed.
-                        // Ideally we should modify generateMovieContent or use generateCustomContent. 
-                        // Wait, generateCustomContent IS exported in my view_file output.
-
-                        const { generateCustomContent, getConfig: getLLMConfig } = require('@/lib/llm');
-                        // Note: getConfig is NOT exported in previous view_file. generateCustomContent IS.
-                        // We will use generateCustomContent and we need the config.
-                        // Since getConfig is internal to llm.ts, we can't easily get it here without exporting it.
-                        // However, generateCustomContent takes a config object.
-                        // SOLUTION: I will assume generateMovieContent can be used if I pass the prompt manually? 
-                        // No, generateMovieContent builds the prompt.
-
-                        // Let's modify imports first or use a hack? 
-                        // Actually, I should have exported getConfig or similar. 
-                        // But wait, generateMovieContent takes `categoryName`. 
-                        // If I pass 'TRANSLATION', it loads 'TRANSLATION' config.
-                        // But generateMovieContent appends "Movie Title: ..." which might be okay or annoying for translation.
-                        // "Translate this... Movie Title: ..." is weird.
-
-                        // BETTER APPROACH: I will update `src/lib/llm.ts` to export `getConfig` in a separate step or just rely on `generateMovieContent` for now?
-                        // No, I need precise control.
-                        // I will update the route to import `getConfig`? No, I can't unless I export it.
-                        // Let's look at `src/lib/llm.ts` again. `getConfig` is not exported.
-                        // I will use `generateCustomContent` but I need the config.
-
-                        // Let's update `src/lib/llm.ts` to export `getAiConfig(category: string)` alias to `getConfig`.
-                        // OR, I can just blindly call `generateMovieContent` with a "Translation" category, but that enforces the prompt structure.
-
-                        // Let's update LLM.ts in a separate step to export `getAiConfig`.
-                        // For now, I will modify THIS step to just do Step 1 and placeholder for Step 2, then fix LLM, then finish Step 2?
-                        // No, inefficient.
-
-                        // Alternative: I can duplicate the prompt construction? 
-                        // Let's try to simply use `generateMovieContent` with category `TRANSLATION`.
-                        // Prompt template for TRANSLATION category in `PROMPT_MAP`? No, the prompt comes from Admin UI `systemPrompt`.
-                        // So `generateMovieContent` is not suitable because it expects a `promptTemplate` argument and `categoryName` for config.
-                        // If I pass `categoryName='TRANSLATION'`, it loads config.
-                        // `promptTemplate` = `${config.systemPrompt}\n\n${content}`.
-                        // `generateMovieContent` will append `Movie Title: ...`.
-                        // `Translate this...\n\n[Content]\n\nMovie Title: ...` -> This is acceptable.
-                        // So I need to fetch the system prompt.
-                        // How to get system prompt without `getConfig`?
-                        // I can't.
-
-                        // OK, I must export `getConfig` from `src/lib/llm.ts`.
-                        // I will pause this Edit, go export `getConfig`, then come back.
-                        // I will return the cursor to the previous state? No I will just do it now.
-                        // I will use multi_replace to edit both files if I can? 
-                        // No, separate files.
-
-                        // I will abort this specific tool call? No, I can't abort comfortably.
-                        // I will just write the code here assuming `getAiConfig` is available, and then immediately implement it in `llm.ts`.
-                        // This is risky if `npm run build` runs in between.
-
-                        // Let's assume I will fix `llm.ts` right after.
-
-                        // Wait, `generateCustomContent` takes `config`. I don't have config.
-                        // Check `src/lib/llm.ts`.
-                        // 104: export async function generateMovieContent ...
-                        // 171: export async function generateCustomContent(prompt: string, config: categoryConfig) ...
-
-                        // If I modify `generateMovieContent` to NOT append title if it's missing in template?
-
                         try {
-                            // Helper Require Removed - Using top-level import
                             const translationConfig = getAiConfig('TRANSLATION');
                             const systemPrompt = translationConfig.systemPrompt || "Translate the following movie content into natural, professional Korean. Maintain the original tone and formatting.";
 
