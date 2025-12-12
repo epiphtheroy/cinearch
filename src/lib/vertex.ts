@@ -11,34 +11,43 @@ const location = 'us-central1';
 // Prepare Auth Options
 let googleAuthOptions: any = undefined;
 
+let credentialsLoaded = false;
+
 // 1. Try Environment Variable
 if (process.env.GOOGLE_CREDENTIALS_JSON) {
     try {
         console.log("[Vertex AI] Attempting to load credentials from GOOGLE_CREDENTIALS_JSON...");
         const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
         googleAuthOptions = { credentials };
-        console.log("[Vertex AI] Successfully loaded credentials from Environment Variable.");
+        credentialsLoaded = true;
+        console.log("[Vertex AI] Loaded credentials from GOOGLE_CREDENTIALS_JSON env var.");
     } catch (e) {
-        console.error("[Vertex AI] Failed to parse GOOGLE_CREDENTIALS_JSON", e);
+        console.warn("[Vertex AI] Found GOOGLE_CREDENTIALS_JSON but failed to parse it. Continuing to file check...", e);
     }
 }
-// 2. Try Local File (firebase-admin-key.json)
-else {
+
+// 2. Try Local File (firebase-admin-key.json) - Only if not already loaded
+if (!credentialsLoaded) {
     const keyFilePath = path.join(process.cwd(), 'firebase-admin-key.json');
-    console.log(`[Vertex AI] Checking for local key file at: ${keyFilePath}`);
 
     if (fs.existsSync(keyFilePath)) {
-        // Use 'keyFile' option which GoogleAuth supports directly
+        // FORCE the environment variable for Google Auth
+        process.env.GOOGLE_APPLICATION_CREDENTIALS = keyFilePath;
+        console.log(`[Vertex AI] Set GOOGLE_APPLICATION_CREDENTIALS to: ${keyFilePath}`);
+
+        // Also set it in options just in case
         googleAuthOptions = { keyFile: keyFilePath };
-        console.log("[Vertex AI] Using keyFile path for googleAuthOptions.");
+        credentialsLoaded = true;
     } else {
-        console.warn("[Vertex AI] firebase-admin-key.json not found locally.");
+        console.warn("[Vertex AI] firebase-admin-key.json not found at:", keyFilePath);
     }
 }
 
-if (!googleAuthOptions) {
+if (!credentialsLoaded) {
     console.warn("[Vertex AI] No manual credentials loaded. Falling back to Application Default Credentials (ADC).");
 }
+
+console.log(`[Vertex AI] Initializing with Project ID: ${projectId}`);
 
 const vertexAI = new VertexAI({
     project: projectId,
