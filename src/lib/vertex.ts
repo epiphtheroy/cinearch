@@ -14,25 +14,30 @@ let googleAuthOptions: any = undefined;
 // 1. Try Environment Variable
 if (process.env.GOOGLE_CREDENTIALS_JSON) {
     try {
+        console.log("[Vertex AI] Attempting to load credentials from GOOGLE_CREDENTIALS_JSON...");
         const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
         googleAuthOptions = { credentials };
+        console.log("[Vertex AI] Successfully loaded credentials from Environment Variable.");
     } catch (e) {
         console.error("[Vertex AI] Failed to parse GOOGLE_CREDENTIALS_JSON", e);
     }
 }
 // 2. Try Local File (firebase-admin-key.json)
 else {
-    try {
-        const keyFilePath = path.join(process.cwd(), 'firebase-admin-key.json');
-        if (fs.existsSync(keyFilePath)) {
-            const keyContent = fs.readFileSync(keyFilePath, 'utf-8');
-            const credentials = JSON.parse(keyContent);
-            googleAuthOptions = { credentials };
-            // console.log("[Vertex AI] Loaded credentials from firebase-admin-key.json");
-        }
-    } catch (e) {
-        console.warn("[Vertex AI] Failed to load firebase-admin-key.json", e);
+    const keyFilePath = path.join(process.cwd(), 'firebase-admin-key.json');
+    console.log(`[Vertex AI] Checking for local key file at: ${keyFilePath}`);
+
+    if (fs.existsSync(keyFilePath)) {
+        // Use 'keyFile' option which GoogleAuth supports directly
+        googleAuthOptions = { keyFile: keyFilePath };
+        console.log("[Vertex AI] Using keyFile path for googleAuthOptions.");
+    } else {
+        console.warn("[Vertex AI] firebase-admin-key.json not found locally.");
     }
+}
+
+if (!googleAuthOptions) {
+    console.warn("[Vertex AI] No manual credentials loaded. Falling back to Application Default Credentials (ADC).");
 }
 
 const vertexAI = new VertexAI({
