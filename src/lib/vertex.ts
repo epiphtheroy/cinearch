@@ -41,7 +41,10 @@ function getVertexClient() {
             console.log(`[Vertex AI] Set GOOGLE_APPLICATION_CREDENTIALS to: ${keyFilePath}`);
 
             // Also set it in options just in case
-            googleAuthOptions = { keyFile: keyFilePath };
+            googleAuthOptions = {
+                keyFile: keyFilePath,
+                scopes: ['https://www.googleapis.com/auth/cloud-platform']
+            };
             credentialsLoaded = true;
         } else {
             console.warn("[Vertex AI] firebase-admin-key.json not found at:", keyFilePath);
