@@ -11,13 +11,15 @@
         "watcher": "node scripts/watcher.js"
     },
     "dependencies": {
+        "@google-cloud/vertexai": "^1.10.0",
         "@google/generative-ai": "^0.24.1",
-        "axios": "^1.6.2",
+        "axios": "^1.13.2",
         "chokidar": "^3.5.3",
         "clsx": "^2.0.0",
         "dotenv": "^16.3.1",
         "firebase": "^12.6.0",
         "firebase-admin": "^11.11.0",
+        "google-auth-library": "^10.5.0",
         "googleapis": "^167.0.0",
         "gray-matter": "^4.0.3",
         "lucide-react": "^0.294.0",

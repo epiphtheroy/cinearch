@@ -15,6 +15,7 @@ export default function Navbar() {
                         <Link href="/films" className="hover:text-red-200 transition-colors">Films</Link>
                         <Link href="/category" className="hover:text-red-200 transition-colors">Category</Link>
                         <Link href="/blog" className="hover:text-red-200 transition-colors">Blog</Link>
+                        <Link href="/critic" className="hover:text-red-200 transition-colors text-purple-400 font-bold">CRITIC AI</Link>
                         <Link href="/admin" className="hover:text-red-200 transition-colors">Admin</Link>
                     </div>
                 </div>
