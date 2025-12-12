@@ -125,8 +125,8 @@ export default function CriticPage() {
                             }
                             return newMsgs;
                         });
-                    } catch (e) {
-                        console.log("Parse error for chunk", match[1]);
+                    } catch {
+                        // Ignore JSON parse errors for partial chunks
                     }
                 }
             }

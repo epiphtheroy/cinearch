@@ -88,48 +88,9 @@ export async function streamCriticAiResponse(userQuery: string): Promise<Readabl
             throw new Error("No response body for stream");
         }
 
-        // Transform the stream: Raw JSON Chunks -> Clean Text
-        const textEncoder = new TextEncoder();
-        const textDecoder = new TextDecoder();
-
-        // Create a custom TransformStream to parse Vertex JSON chunks
-        const transformer = new TransformStream({
-            async transform(chunk, controller) {
-                const text = textDecoder.decode(chunk, { stream: true });
-
-                // Vertex sends an array of objects, sometimes split across chunks.
-                // Handling raw JSON parsing on a stream is complex.
-                // However, usually Vertex sends complete JSON objects wrapped in [...] array for the whole request,
-                // BUT for 'streamGenerateContent', it sends a JSON array where each item is a candidate.
-                // Actually, doing a robust parse here is tricky. 
-
-                // SIMPLIFICATION:
-                // We will pass the raw stream to the client and parse it there? 
-                // NO, client code is harder to debug.
-                // Let's implement a buffer based parser lines of JSON.
-
-                // Vertex REST Stream format:
-                // [
-                // { "candidates": ... },
-                // { "candidates": ... }
-                // ]
-
-                // To keep it simple for this "manual implementation", we'll assume chunks contain enough data 
-                // or we use a regex to extract "text": "..." if possible, OR
-                // we just pass the RAW BYTES to the client and let the client assume it's getting Vertex format 
-                // but that exposes internal API structure.
-
-                // Let's try to extract text via Regex which is robust enough for simple text extraction
-                // pattern: "text": "..."
-
-                // Actually, let's just pass the raw stream to the client for now. 
-                // It lowers server load and complexity.
-                // The client will need to handle the "[", ",", "]" boilerplate of the JSON stream.
-
-                controller.enqueue(chunk);
-            }
-        });
-
+        // Return the RAW stream to the client.
+        // We let the client handle the JSON parsing via Regex, which is simpler/more robust 
+        // than trying to transform broken JSON chunks here.
         return response.body;
 
     } catch (error: any) {
