@@ -8,54 +8,63 @@ import fs from 'fs';
 const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'epiph-test-bot';
 const location = 'us-central1';
 
-// Prepare Auth Options
-let googleAuthOptions: any = undefined;
+// Lazy Initialization Singleton
+let vertexAIInstance: VertexAI | null = null;
 
-let credentialsLoaded = false;
+function getVertexClient() {
+    if (vertexAIInstance) return vertexAIInstance;
 
-// 1. Try Environment Variable
-if (process.env.GOOGLE_CREDENTIALS_JSON) {
-    try {
-        console.log("[Vertex AI] Attempting to load credentials from GOOGLE_CREDENTIALS_JSON...");
-        const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
-        googleAuthOptions = { credentials };
-        credentialsLoaded = true;
-        console.log("[Vertex AI] Loaded credentials from GOOGLE_CREDENTIALS_JSON env var.");
-    } catch (e) {
-        console.warn("[Vertex AI] Found GOOGLE_CREDENTIALS_JSON but failed to parse it. Continuing to file check...", e);
+    // Prepare Auth Options
+    let googleAuthOptions: any = undefined;
+    let credentialsLoaded = false;
+
+    // 1. Try Environment Variable
+    if (process.env.GOOGLE_CREDENTIALS_JSON) {
+        try {
+            console.log("[Vertex AI] Attempting to load credentials from GOOGLE_CREDENTIALS_JSON...");
+            const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+            googleAuthOptions = { credentials };
+            credentialsLoaded = true;
+            console.log("[Vertex AI] Loaded credentials from GOOGLE_CREDENTIALS_JSON env var.");
+        } catch (e) {
+            console.warn("[Vertex AI] Found GOOGLE_CREDENTIALS_JSON but failed to parse it. Continuing to file check...", e);
+        }
     }
-}
 
-// 2. Try Local File (firebase-admin-key.json) - Only if not already loaded
-if (!credentialsLoaded) {
-    const keyFilePath = path.join(process.cwd(), 'firebase-admin-key.json');
+    // 2. Try Local File (firebase-admin-key.json) - Only if not already loaded
+    if (!credentialsLoaded) {
+        const keyFilePath = path.join(process.cwd(), 'firebase-admin-key.json');
 
-    if (fs.existsSync(keyFilePath)) {
-        // FORCE the environment variable for Google Auth
-        process.env.GOOGLE_APPLICATION_CREDENTIALS = keyFilePath;
-        console.log(`[Vertex AI] Set GOOGLE_APPLICATION_CREDENTIALS to: ${keyFilePath}`);
+        if (fs.existsSync(keyFilePath)) {
+            // FORCE the environment variable for Google Auth
+            process.env.GOOGLE_APPLICATION_CREDENTIALS = keyFilePath;
+            console.log(`[Vertex AI] Set GOOGLE_APPLICATION_CREDENTIALS to: ${keyFilePath}`);
 
-        // Also set it in options just in case
-        googleAuthOptions = { keyFile: keyFilePath };
-        credentialsLoaded = true;
-    } else {
-        console.warn("[Vertex AI] firebase-admin-key.json not found at:", keyFilePath);
+            // Also set it in options just in case
+            googleAuthOptions = { keyFile: keyFilePath };
+            credentialsLoaded = true;
+        } else {
+            console.warn("[Vertex AI] firebase-admin-key.json not found at:", keyFilePath);
+        }
     }
+
+    if (!credentialsLoaded) {
+        console.warn("[Vertex AI] No manual credentials loaded. Falling back to Application Default Credentials (ADC).");
+    }
+
+    console.log(`[Vertex AI] Initializing with Project ID: ${projectId}`);
+
+    vertexAIInstance = new VertexAI({
+        project: projectId,
+        location: location,
+        googleAuthOptions
+    });
+
+    return vertexAIInstance;
 }
-
-if (!credentialsLoaded) {
-    console.warn("[Vertex AI] No manual credentials loaded. Falling back to Application Default Credentials (ADC).");
-}
-
-console.log(`[Vertex AI] Initializing with Project ID: ${projectId}`);
-
-const vertexAI = new VertexAI({
-    project: projectId,
-    location: location,
-    googleAuthOptions
-});
 
 export async function getCriticAiResponse(userQuery: string): Promise<string> {
+    const vertexAI = getVertexClient();
     try {
 
 
