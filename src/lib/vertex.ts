@@ -12,6 +12,20 @@ let authClient: any = null;
 
 async function getAuthToken(): Promise<string> {
     if (!authClient) {
+        // Sanitize: If GOOGLE_APPLICATION_CREDENTIALS contains JSON content (mistake), 
+        // parse it and unset the env var to prevent "File name too long" or ENOENT errors.
+        if (process.env.GOOGLE_APPLICATION_CREDENTIALS && process.env.GOOGLE_APPLICATION_CREDENTIALS.trim().startsWith('{')) {
+            console.log("[Vertex AI Manual] Detected JSON in GOOGLE_APPLICATION_CREDENTIALS. Parsing as credentials directly.");
+            try {
+                const creds = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+                process.env.GOOGLE_CREDENTIALS_JSON = process.env.GOOGLE_APPLICATION_CREDENTIALS; // Copy to correct var just in case
+                delete process.env.GOOGLE_APPLICATION_CREDENTIALS; // internal override
+                // We will handle this in the fallback block below via GOOGLE_CREDENTIALS_JSON check or explicit pass
+            } catch (e) {
+                console.error("[Vertex AI Manual] Failed to parse JSON in GOOGLE_APPLICATION_CREDENTIALS", e);
+            }
+        }
+
         // Try to load key file
         const keyFilePath = path.join(process.cwd(), 'firebase-admin-key.json');
         const options: any = {
@@ -26,6 +40,9 @@ async function getAuthToken(): Promise<string> {
                 options.credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
                 console.log("[Vertex AI Manual] Using Env Var Credentials");
             } catch { console.error("Bad JSON in GOOGLE_CREDENTIALS_JSON"); }
+        } else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+            // If it still exists (meaning it's a path), let GoogleAuth verify it.
+            console.log("[Vertex AI Manual] Using GOOGLE_APPLICATION_CREDENTIALS path:", process.env.GOOGLE_APPLICATION_CREDENTIALS);
         } else {
             console.log("[Vertex AI Manual] Falling back to default credentials");
         }
