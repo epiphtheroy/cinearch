@@ -4,13 +4,12 @@ import { Timestamp } from 'firebase-admin/firestore';
 import fs from 'fs';
 import path from 'path';
 
-const adminDb = getAdminDb();
-
 function sanitizeFilename(text: string): string {
     return text.replace(/[^a-zA-Z0-9가-힣\s]/g, '').trim().substring(0, 50);
 }
 
 export async function POST(request: Request) {
+    const adminDb = getAdminDb();
     try {
         const { query, result, timestamp } = await request.json();
 

@@ -2,16 +2,18 @@ import { NextResponse } from 'next/server';
 import { getAdminDb } from '@/lib/firebaseAdmin';
 import { Timestamp } from 'firebase-admin/firestore';
 
-const db = getAdminDb();
+
+
 
 export async function GET(_request: Request) {
+    const db = getAdminDb();
     try {
         const snapshot = await db.collection('critic_chats')
             .orderBy('createdAt', 'desc')
             .limit(20)
             .get();
 
-        const history = snapshot.docs.map(doc => ({
+        const history = snapshot.docs.map((doc: any) => ({
             id: doc.id,
             ...doc.data(),
             createdAt: doc.data().createdAt?.toMillis() || 0
@@ -24,6 +26,7 @@ export async function GET(_request: Request) {
 }
 
 export async function POST(request: Request) {
+    const db = getAdminDb();
     try {
         const { title, messages } = await request.json();
 
