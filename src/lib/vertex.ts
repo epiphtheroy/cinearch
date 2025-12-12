@@ -17,7 +17,8 @@ async function getAuthToken(): Promise<string> {
         if (process.env.GOOGLE_APPLICATION_CREDENTIALS && process.env.GOOGLE_APPLICATION_CREDENTIALS.trim().startsWith('{')) {
             console.log("[Vertex AI Manual] Detected JSON in GOOGLE_APPLICATION_CREDENTIALS. Parsing as credentials directly.");
             try {
-                const creds = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+                // Validate JSON but don't store it in a variable if unused
+                JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
                 process.env.GOOGLE_CREDENTIALS_JSON = process.env.GOOGLE_APPLICATION_CREDENTIALS; // Copy to correct var just in case
                 delete process.env.GOOGLE_APPLICATION_CREDENTIALS; // internal override
                 // We will handle this in the fallback block below via GOOGLE_CREDENTIALS_JSON check or explicit pass
