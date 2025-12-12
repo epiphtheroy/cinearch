@@ -43,8 +43,7 @@ const vertexAI = new VertexAI({
 
 export async function getCriticAiResponse(userQuery: string): Promise<string> {
     try {
-        // Model ID provided by user
-        const modelId = "4891022445022019584";
+
 
         // Instantiate the model using the Endpoint Resource Name for Tuned Models
         // Found via debugging: projects/254213169747/locations/us-central1/endpoints/7824924088207409152

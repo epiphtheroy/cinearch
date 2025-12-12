@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Save, MessageSquare, Plus, Bot, User, Trash2 } from 'lucide-react';
+import { Send, Save, MessageSquare, Plus, Bot, User } from 'lucide-react';
 import axios from 'axios';
 
 interface Message {

@@ -4,7 +4,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 
 const db = getAdminDb();
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
     try {
         const snapshot = await db.collection('critic_chats')
             .orderBy('createdAt', 'desc')
