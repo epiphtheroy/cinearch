@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getCriticAiResponse } from '@/lib/vertex';
 
+// Allow this function to run for up to 60 seconds (max for Hobby tier usually, Pro is higher)
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
     try {
         const { query } = await request.json();

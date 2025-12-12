@@ -69,7 +69,8 @@ export default function CriticPage() {
         setIsLoading(true);
 
         try {
-            const res = await axios.post('/api/critic/chat', { query: userMsg.content });
+            // timeout: 5 minutes (300,000 ms) to allow for long LLM generation
+            const res = await axios.post('/api/critic/chat', { query: userMsg.content }, { timeout: 300000 });
             const aiMsg: Message = { role: 'ai', content: res.data.result, timestamp: Date.now() };
 
             const newMessages = [...messages, userMsg, aiMsg];
