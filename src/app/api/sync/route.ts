@@ -13,7 +13,7 @@ import { extractKeywords } from '@/lib/gemini';
 
 const WATCH_DIR = path.join(process.cwd(), 'source_md');
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
-const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+?)_\[(?<catTitle>.+)\]\.md$/;
+const FILENAME_REGEX = /^\[(?<movieId>\d+)\](?<movieTitle>.+?)_\[(?<catTitle>.+?)\](?:_[a-zA-Z0-9]+)?\.md$/;
 
 // Helper to compute MD5 hash
 function computeHash(content: string): string {
