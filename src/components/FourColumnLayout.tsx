@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import MarkdownViewer from './MarkdownViewer';
 import { clsx } from 'clsx';
@@ -35,6 +35,11 @@ interface FourColumnLayoutProps {
     articles: Article[];
 }
 
+const shuffle = (array: any[], count: number) => {
+    const shuffled = [...array].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+};
+
 export default function FourColumnLayout({ movie, articles }: FourColumnLayoutProps) {
     console.log(`[FourColumnLayout] Rendered. Articles: ${articles.length}, Data: ${movie.title}`);
 
@@ -50,12 +55,7 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
     const [displayMedia, setDisplayMedia] = useState<{ videos: any[], images: any[] }>({ videos: [], images: [] });
     const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
 
-    const shuffle = (array: any[], count: number) => {
-        const shuffled = [...array].sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, count);
-    };
-
-    const refreshContent = (pool: { allVideos: any[], backdrops: any[], posters: any[] }) => {
+    const refreshContent = useCallback((pool: { allVideos: any[], backdrops: any[], posters: any[] }) => {
         if (!pool.allVideos && !pool.backdrops) return;
 
         // 1. Videos: Pick 3 random
@@ -73,7 +73,7 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
             images: mixedImages
         });
         setPlayingVideoId(null); // Reset player
-    };
+    }, []);
 
     useEffect(() => {
         if (movie?.id) {
@@ -89,7 +89,7 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                 setSidebarData(res.data);
             }).catch(err => console.error("Failed to fetch sidebar:", err));
         }
-    }, [movie?.id]);
+    }, [movie?.id, refreshContent]);
 
     const activeArticle = articles.find(a => a.id === activeArticleId);
 
