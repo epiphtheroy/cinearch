@@ -34,22 +34,32 @@ export async function POST(req: Request) {
             }, { status: 404 });
         }
 
+        // 1. Get Last Sync Time
+        let lastSyncTime = 0;
+        const syncDocRef = db.collection('system_settings').doc('sync');
+
+        if (!force) {
+            const syncDoc = await syncDocRef.get();
+            if (syncDoc.exists) {
+                const data = syncDoc.data();
+                // Handle Firestore Timestamp or number/string
+                if (data?.lastSyncTimestamp) {
+                    if (typeof data.lastSyncTimestamp.toMillis === 'function') {
+                        lastSyncTime = data.lastSyncTimestamp.toMillis();
+                    } else {
+                        lastSyncTime = new Date(data.lastSyncTimestamp).getTime();
+                    }
+                }
+            }
+        }
+
+        console.log(`Last Sync Time: ${new Date(lastSyncTime).toISOString()} (Timestamp: ${lastSyncTime})`);
+
         const files = fs.readdirSync(WATCH_DIR);
         const results = [];
 
-        // 1. Fetch all existing articles' fileHash and visualHtml presence
-        const snapshot = await db.collection('articles').select('fileHash', 'visualHtml').get();
-        const existingData: Record<string, { hash: string, hasVisual: boolean }> = {};
-
-        snapshot.docs.forEach(doc => {
-            const data = doc.data();
-            existingData[doc.id] = {
-                hash: data.fileHash || '',
-                hasVisual: !!(data.visualHtml && data.visualHtml.length > 0)
-            };
-        });
-
-        console.log(`Found ${snapshot.size} existing articles in DB.`);
+        // We no longer pre-fetch all articles for hash comparison to save memory/bandwidth.
+        // We assume file mtime is the source of truth.
 
         let skippedCount = 0;
         let uploadedCount = 0;
@@ -58,46 +68,43 @@ export async function POST(req: Request) {
             if (file.startsWith('.')) continue;
 
             const match = file.match(FILENAME_REGEX);
-            if (!match) {
-                // results.push({ file, status: 'skipped', reason: 'Invalid filename' });
+            if (!match) continue;
+
+            const filePath = path.join(WATCH_DIR, file);
+
+            // Check File Modification Time
+            let mtimeMs = 0;
+            try {
+                const stats = fs.statSync(filePath);
+                mtimeMs = stats.mtimeMs;
+            } catch (err) {
+                console.error(`Error reading stats for ${file}`, err);
                 continue;
             }
 
+            // SKIP CRITERIA:
+            // 1. Not Forced
+            // 2. File was modified BEFORE the last sync
+            if (!force && mtimeMs <= lastSyncTime) {
+                skippedCount++;
+                continue;
+            }
+
+            console.log(`Processing modified file: ${file}`);
+
             const { movieId, movieTitle, catTitle } = match.groups!;
             const categoryNameUpper = catTitle.toUpperCase();
-
-            // Reconstruct Article ID logic
             const articleId = `article_${movieId}_${categoryNameUpper}`;
-            const filePath = path.join(WATCH_DIR, file);
+            const docId = `movie_${movieId}`;
 
             try {
-                // Read and Hash
                 const fileContent = fs.readFileSync(filePath, 'utf8');
+                // We calculate hash locally just to save it, but we don't use it for decision making anymore
                 const currentHash = computeHash(fileContent);
 
-                // Check existing state
-                const currentDbState = existingData[articleId];
-
-                // SKIP CRITERIA:
-                // 1. Not Forced
-                // 2. Hash Matches (Content unchanged)
-                // 3. Visual HTML Exists (Already generated)
-                if (!force && currentDbState && currentDbState.hash === currentHash && currentDbState.hasVisual) {
-                    skippedCount++;
-                    continue; // Skip processing
-                }
-
-                console.log(`Processing ${file} (Unchanged: ${currentDbState?.hash === currentHash}, Missing Visual: ${!currentDbState?.hasVisual}, Force: ${force})`);
-
-                // If Hash is different or new, Process it
                 const { data: frontmatter, content } = matter(fileContent);
-                const docId = `movie_${movieId}`;
 
-                // --- VISUAL GENERATION REMOVED ---
-                const visualHtml = '';
-                // ---------------------------------
-
-                // Fetch TMDB Metadata only if we are actually updating
+                // Fetch TMDB Metadata
                 let metadata: any = {};
                 if (TMDB_API_KEY) {
                     try {
@@ -132,8 +139,7 @@ export async function POST(req: Request) {
 
                 const articleRef = db.collection('articles').doc(articleId);
 
-                // Construct payload
-                // Generate Keywords using AI
+                // Generate Keywords
                 const keywords = await extractKeywords(content);
 
                 const articlePayload: any = {
@@ -145,21 +151,16 @@ export async function POST(req: Request) {
                     director: frontmatter.director || '',
                     lang: frontmatter.lang || 'en',
                     content: content.trim(),
-                    fileHash: currentHash, // Save new hash
-                    keywords: keywords, // Save AI keywords
+                    fileHash: currentHash,
+                    keywords: keywords,
                     updatedAt: admin.firestore.FieldValue.serverTimestamp()
                 };
 
-                // Visual HTML generation logic has been removed.
-                // We no longer update 'visualHtml'.
-
                 batch.set(articleRef, articlePayload, { merge: true });
-
                 await batch.commit();
 
                 uploadedCount++;
-                results.push({ file, status: 'uploaded', title: movieTitle, visualGenerated: !!visualHtml });
-                console.log(`Uploaded changed file: ${file}`);
+                results.push({ file, status: 'uploaded', title: movieTitle });
 
             } catch (error: any) {
                 console.error(`Error processing ${file}:`, error);
@@ -167,8 +168,18 @@ export async function POST(req: Request) {
             }
         }
 
+        // Update Last Sync Time only if we are done
+        // We set it to current server time.
+        // NOTE: There is a small race condition window if a file is modified AS we sync, 
+        // but it's acceptable for this use case. 
+        await syncDocRef.set({
+            lastSyncTimestamp: admin.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+
+        console.log(`Sync finished. Uploaded: ${uploadedCount}, Skipped: ${skippedCount}`);
+
         return NextResponse.json({
-            message: `Sync completed. Uploaded: ${uploadedCount}, Skipped: ${skippedCount} (Unchanged).`,
+            message: `Smart Sync completed. Uploaded: ${uploadedCount}, Skipped: ${skippedCount} (Unchanged).`,
             results
         });
 

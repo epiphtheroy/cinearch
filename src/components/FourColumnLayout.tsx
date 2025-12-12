@@ -39,8 +39,10 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
     console.log(`[FourColumnLayout] Rendered. Articles: ${articles.length}, Data: ${movie.title}`);
 
     const [activeArticleId, setActiveArticleId] = useState<string | null>(articles[0]?.id || null);
+    const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
     // Sidebar Data State
+
     const [sidebarData, setSidebarData] = useState<any>(null);
 
     // Random Shuffle State
@@ -438,13 +440,13 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                                             ) : (
                                                 <div
                                                     onClick={() => setPlayingVideoId(video.id)}
-                                                    className="block relative aspect-video rounded-sm overflow-hidden border border-zinc-800 group-hover:border-red-900/50 transition-colors cursor-pointer"
+                                                    className="block relative aspect-video rounded-sm overflow-hidden border border-zinc-900 transition-all duration-300 cursor-pointer group-hover:shadow-[0_0_15px_rgba(255,0,0,0.3)] hover:border-red-500/50"
                                                 >
                                                     <Image
                                                         src={`https://img.youtube.com/vi/${video.key}/mqdefault.jpg`}
                                                         alt={video.name}
                                                         fill
-                                                        className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                                        className="object-cover opacity-100 transition-all duration-500"
                                                     />
                                                     <div className="absolute inset-0 flex items-center justify-center">
                                                         <div className="w-10 h-10 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/10 group-hover:bg-red-600 group-hover:border-red-500 transition-all">
@@ -471,12 +473,17 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                                 </h4>
                                 <div className="grid grid-cols-1 gap-3">
                                     {displayMedia.images.map((img, idx) => (
-                                        <div key={idx} className="relative w-full rounded-sm overflow-hidden border border-zinc-900 bg-zinc-900 shadow-sm" style={{ aspectRatio: img.aspect_ratio }}>
+                                        <div
+                                            key={idx}
+                                            className="relative w-full rounded-sm overflow-hidden border border-zinc-900 bg-zinc-900 shadow-sm cursor-pointer group transition-all duration-300 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+                                            style={{ aspectRatio: img.aspect_ratio }}
+                                            onClick={() => setLightboxImage(img.file_path)}
+                                        >
                                             <Image
                                                 src={`https://image.tmdb.org/t/p/w780${img.file_path}`}
                                                 alt="Movie Still"
                                                 fill
-                                                className="object-cover opacity-75 hover:opacity-100 transition-opacity duration-500"
+                                                className="object-cover opacity-100 transition-transform duration-700 group-hover:scale-105"
                                                 sizes="(max-width: 768px) 100vw, 25vw"
                                             />
                                         </div>
@@ -494,6 +501,31 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                     </div>
                 </div>
             </aside>
+
+            {/* Lightbox Overlay */}
+            {lightboxImage && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <button
+                        onClick={() => setLightboxImage(null)}
+                        className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors border border-white/20 rounded-full p-2 z-60"
+                        title="Close"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+
+                    <div className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center">
+                        <Image
+                            src={`https://image.tmdb.org/t/p/original${lightboxImage}`}
+                            alt="Full View"
+                            fill
+                            className="object-contain"
+                            quality={100}
+                        />
+                    </div>
+                </div>
+            )}
 
         </div>
     );
