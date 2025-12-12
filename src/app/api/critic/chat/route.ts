@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getCriticAiResponse } from '@/lib/vertex';
+import { streamCriticAiResponse } from '@/lib/vertex';
 
-// Allow this function to run for up to 60 seconds (max for Hobby tier usually, Pro is higher)
+// Allow this function to run for up to 60 seconds
 export const maxDuration = 60;
+export const dynamic = 'force-dynamic'; // Prevent caching
 
 export async function POST(request: Request) {
     try {
@@ -12,10 +13,16 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Query is required" }, { status: 400 });
         }
 
-        console.log(`[Critic AI] Received query: ${query.substring(0, 50)}...`);
-        const responseText = await getCriticAiResponse(query);
+        console.log(`[Critic AI] Streaming query: ${query.substring(0, 50)}...`);
 
-        return NextResponse.json({ result: responseText });
+        const stream = await streamCriticAiResponse(query);
+
+        return new NextResponse(stream, {
+            headers: {
+                'Content-Type': 'application/json', // Keeping it JSON as we are streaming JSON array
+                'Transfer-Encoding': 'chunked'
+            }
+        });
 
     } catch (error: any) {
         console.error("[Critic AI] API Error:", error);

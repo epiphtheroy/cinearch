@@ -68,20 +68,79 @@ export default function CriticPage() {
         setQuery('');
         setIsLoading(true);
 
+        // Create a placeholder AI message
+        const aiMsgId = Date.now();
+        setMessages(prev => [...prev, { role: 'ai', content: '', timestamp: aiMsgId }]);
+
         try {
-            // timeout: 5 minutes (300,000 ms) to allow for long LLM generation
-            const res = await axios.post('/api/critic/chat', { query: userMsg.content }, { timeout: 300000 });
-            const aiMsg: Message = { role: 'ai', content: res.data.result, timestamp: Date.now() };
+            const response = await fetch('/api/critic/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: userMsg.content }),
+            });
 
-            const newMessages = [...messages, userMsg, aiMsg];
-            setMessages(newMessages);
+            if (!response.ok) throw new Error(response.statusText);
 
-            // Save to history automatically (update or create)
-            // Implementation detail: simplified here, could optimize to not save on every msg
+            const reader = response.body?.getReader();
+            if (!reader) throw new Error("No reader available");
+
+            const decoder = new TextDecoder();
+            let accumulatedText = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                // Vertex sends a JSON array stream. We need to extract specific "text" fields.
+                // Simple regex robustly finds the text value even in broken JSON chunks
+                // Pattern matches: "text": "captured_group"
+                // Note: This regex handles simple escaped quotes roughly.
+
+                // We run regex on the NEW chunk + potentially tail of old chunk?
+                // Actually, Vertex sends fairly clean chunks. Let's just Regex the chunk.
+                // NOTE: A text value might be split across chunks. Ideally we buffer.
+                // BUT for now, let's try just scanning the chunk.
+
+                // Improved Strategy:
+                // Since we are rebuilding a JSON string, extracting "text" is tricky if it splits.
+                // Simpler: Just accumulate the WHOLE response for safety, but display reasonably.
+                // Actually, the regex `/"text":\s*"((?:[^"\\]|\\.)*)"/g` is decent.
+
+                const regex = /"text":\s*"((?:[^"\\]|\\.)*)"/g;
+                let match;
+                while ((match = regex.exec(chunk)) !== null) {
+                    // JSON decode the matched string to handle escapes like \n, \"
+                    try {
+                        // match[1] depends on capture group. The regex matches the content inside quotes.
+                        // We need to wrap it in quotes to JSON.parse it safely back to a string
+                        const textFragment = JSON.parse(`"${match[1]}"`);
+                        accumulatedText += textFragment;
+
+                        setMessages(prev => {
+                            const newMsgs = [...prev];
+                            const lastMsg = newMsgs[newMsgs.length - 1];
+                            if (lastMsg.role === 'ai') {
+                                lastMsg.content = accumulatedText;
+                            }
+                            return newMsgs;
+                        });
+                    } catch (e) {
+                        console.log("Parse error for chunk", match[1]);
+                    }
+                }
+            }
+
         } catch (err: any) {
             console.error("Chat error", err);
-            const errorMsg: Message = { role: 'ai', content: `Error: ${err.message || 'Something went wrong.'}`, timestamp: Date.now() };
-            setMessages(prev => [...prev, errorMsg]);
+            setMessages(prev => {
+                const newMsgs = [...prev];
+                const lastMsg = newMsgs[newMsgs.length - 1];
+                if (lastMsg.role === 'ai') {
+                    lastMsg.content += `\n\n[Error: ${err.message || 'Connection failed'}]`;
+                }
+                return newMsgs;
+            });
         } finally {
             setIsLoading(false);
         }
