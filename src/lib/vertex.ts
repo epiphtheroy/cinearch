@@ -73,7 +73,7 @@ export async function getCriticAiResponse(userQuery: string): Promise<string> {
             body: JSON.stringify({
                 contents: [{ role: 'user', parts: [{ text: userQuery }] }],
                 generationConfig: {
-                    maxOutputTokens: 2048,
+                    maxOutputTokens: 8192,
                     temperature: 0.7
                 }
             })
