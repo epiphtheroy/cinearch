@@ -1,103 +1,81 @@
-import { VertexAI } from '@google-cloud/vertexai';
+import { GoogleAuth } from 'google-auth-library';
 import path from 'path';
 import fs from 'fs';
 
-// Initialize Vertex AI
-// We prioritize GOOGLE_CREDENTIALS_JSON, then local firebase-admin-key.json, then ADC.
-
+// Configuration
 const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'epiph-test-bot';
 const location = 'us-central1';
+const endpointId = '7824924088207409152';
 
-// Lazy Initialization Singleton
-let vertexAIInstance: VertexAI | null = null;
+// 1. Initialize Auth Client (Singleton)
+let authClient: any = null;
 
-function getVertexClient() {
-    if (vertexAIInstance) return vertexAIInstance;
-
-    // Prepare Auth Options
-    let googleAuthOptions: any = undefined;
-    let credentialsLoaded = false;
-
-    // 1. Try Environment Variable
-    if (process.env.GOOGLE_CREDENTIALS_JSON) {
-        try {
-            console.log("[Vertex AI] Attempting to load credentials from GOOGLE_CREDENTIALS_JSON...");
-            const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
-            googleAuthOptions = { credentials };
-            credentialsLoaded = true;
-            console.log("[Vertex AI] Loaded credentials from GOOGLE_CREDENTIALS_JSON env var.");
-        } catch (e) {
-            console.warn("[Vertex AI] Found GOOGLE_CREDENTIALS_JSON but failed to parse it. Continuing to file check...", e);
-        }
-    }
-
-    // 2. Try Local File (firebase-admin-key.json) - Only if not already loaded
-    if (!credentialsLoaded) {
+async function getAuthToken(): Promise<string> {
+    if (!authClient) {
+        // Try to load key file
         const keyFilePath = path.join(process.cwd(), 'firebase-admin-key.json');
+        let options: any = {
+            scopes: ['https://www.googleapis.com/auth/cloud-platform']
+        };
 
         if (fs.existsSync(keyFilePath)) {
-            // FORCE the environment variable for Google Auth
-            process.env.GOOGLE_APPLICATION_CREDENTIALS = keyFilePath;
-            console.log(`[Vertex AI] Set GOOGLE_APPLICATION_CREDENTIALS to: ${keyFilePath}`);
-
-            // Also set it in options just in case
-            googleAuthOptions = {
-                keyFile: keyFilePath,
-                scopes: ['https://www.googleapis.com/auth/cloud-platform']
-            };
-            credentialsLoaded = true;
+            console.log(`[Vertex AI Manual] Using key file: ${keyFilePath}`);
+            options.keyFile = keyFilePath;
+        } else if (process.env.GOOGLE_CREDENTIALS_JSON) {
+            try {
+                options.credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+                console.log("[Vertex AI Manual] Using Env Var Credentials");
+            } catch (e) { console.error("Bad JSON in GOOGLE_CREDENTIALS_JSON"); }
         } else {
-            console.warn("[Vertex AI] firebase-admin-key.json not found at:", keyFilePath);
+            console.log("[Vertex AI Manual] Falling back to default credentials");
         }
+
+        authClient = new GoogleAuth(options);
     }
 
-    if (!credentialsLoaded) {
-        console.warn("[Vertex AI] No manual credentials loaded. Falling back to Application Default Credentials (ADC).");
-    }
-
-    console.log(`[Vertex AI] Initializing with Project ID: ${projectId}`);
-
-    vertexAIInstance = new VertexAI({
-        project: projectId,
-        location: location,
-        googleAuthOptions
-    });
-
-    return vertexAIInstance;
+    const client = await authClient.getClient();
+    const accessToken = await client.getAccessToken();
+    return accessToken.token;
 }
 
 export async function getCriticAiResponse(userQuery: string): Promise<string> {
-    const vertexAI = getVertexClient();
     try {
+        const token = await getAuthToken();
 
+        // Construct Endpoint URL
+        const endpointResource = `projects/${projectId}/locations/${location}/endpoints/${endpointId}`;
+        const url = `https://${location}-aiplatform.googleapis.com/v1beta1/${endpointResource}:generateContent`;
 
-        // Instantiate the model using the Endpoint Resource Name for Tuned Models
-        // Found via debugging: projects/254213169747/locations/us-central1/endpoints/7824924088207409152
-        // Note: Project ID 254213169747 corresponds to 'epiph-test-bot'
-        const endpointResource = `projects/${projectId}/locations/${location}/endpoints/7824924088207409152`;
-
-        const generativeModel = vertexAI.preview.getGenerativeModel({
-            model: endpointResource,
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: userQuery }] }],
+                generationConfig: {
+                    maxOutputTokens: 2048,
+                    temperature: 0.7
+                }
+            })
         });
 
-        const resp = await generativeModel.generateContent({
-            contents: [{ role: 'user', parts: [{ text: userQuery }] }],
-        });
-
-        const contentResponse = await resp.response;
-
-        if (contentResponse.candidates && contentResponse.candidates.length > 0) {
-            return contentResponse.candidates[0].content.parts[0].text || "No response text.";
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Vertex API returned ${response.status}: ${errorText}`);
         }
 
-        return "No candidates returned.";
+        const data = await response.json();
+
+        if (data.candidates && data.candidates.length > 0) {
+            return data.candidates[0].content.parts[0].text || "No response text.";
+        }
+
+        return "No candidates returned from AI.";
 
     } catch (error: any) {
-        console.error("Error calling Vertex AI:", error);
-        // Log more details if available
-        if (error.response) {
-            console.error("Error Response Data:", JSON.stringify(error.response.data));
-        }
+        console.error("Error calling Vertex AI (Manual REST):", error);
         return `Error interacting with Critic AI: ${error.message}`;
     }
 }
