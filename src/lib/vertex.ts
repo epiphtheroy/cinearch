@@ -14,7 +14,7 @@ async function getAuthToken(): Promise<string> {
     if (!authClient) {
         // Try to load key file
         const keyFilePath = path.join(process.cwd(), 'firebase-admin-key.json');
-        let options: any = {
+        const options: any = {
             scopes: ['https://www.googleapis.com/auth/cloud-platform']
         };
 
@@ -25,7 +25,7 @@ async function getAuthToken(): Promise<string> {
             try {
                 options.credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
                 console.log("[Vertex AI Manual] Using Env Var Credentials");
-            } catch (e) { console.error("Bad JSON in GOOGLE_CREDENTIALS_JSON"); }
+            } catch { console.error("Bad JSON in GOOGLE_CREDENTIALS_JSON"); }
         } else {
             console.log("[Vertex AI Manual] Falling back to default credentials");
         }
