@@ -16,6 +16,7 @@ function log(message: string) {
 
 export async function POST(_request: Request) {
     log('--- Deployment Request Started ---');
+    // Force rebuild timestamp: 1
     try {
         // 1. Git Add
         // 30s timeout

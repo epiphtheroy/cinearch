@@ -146,7 +146,7 @@ export default function CriticPage() {
                 </div>
             </aside>
 
-            // Main Chat Area
+            {/* Main Chat Area */}
             <main className="flex-1 flex flex-col relative">
                 {/* Header / Top Shadow */}
                 <div className="absolute top-0 w-full h-16 bg-gradient-to-b from-[#0f0f0f] to-transparent z-10 pointer-events-none" />
