@@ -91,15 +91,23 @@ export async function POST(_request: Request) {
 
                 console.log(`Processing Row ${item.rowIndex} (ID: ${item.tmdbId}). Mode: ${item.status === '2' ? 'Full Batch' : (item.status === '3' ? 'Batch (No Asset)' : 'Single')}. Categories: ${targetCategories.length}`);
 
-                // Helper to process a single category
-                const processCategory = async (catName: string) => {
+                // Process categories sequentially for maximum stability
+                for (let i = 0; i < targetCategories.length; i++) {
+                    const catName = targetCategories[i];
+
                     try {
                         // 1. Get Prompt Doc ID
                         const promptDocId = PROMPT_MAP[catName];
 
                         if (!promptDocId) {
                             console.warn(`[Batch] Skipping category '${catName}' - No Doc ID configured.`);
-                            return;
+                            continue;
+                        }
+
+                        // Add safety delay BEFORE processing (except the first one) to let API cool down
+                        if (i > 0 && (item.status === '2' || item.status === '3')) {
+                            console.log(`[Batch] Waiting 5s before next category...`);
+                            await new Promise(resolve => setTimeout(resolve, 5000));
                         }
 
                         const promptContent = await getPromptContent(promptDocId);
@@ -179,21 +187,6 @@ lang: ko
                     } catch (catError: any) {
                         console.error(`[Batch Error] Failed category '${catName}' for movie '${movieTitle}': `, catError.message);
                         results.push({ title: movieTitle, category: catName, status: 'Skipped', error: catError.message });
-                    }
-                };
-
-                // Processing in Chunks (Concurrent Batching)
-                const CONCURRENCY_LIMIT = 3;
-                for (let i = 0; i < targetCategories.length; i += CONCURRENCY_LIMIT) {
-                    const chunk = targetCategories.slice(i, i + CONCURRENCY_LIMIT);
-                    console.log(`[Batch] Processing chunk ${i / CONCURRENCY_LIMIT + 1} of ${Math.ceil(targetCategories.length / CONCURRENCY_LIMIT)}: ${chunk.join(', ')}`);
-
-                    // Run chunk in parallel
-                    await Promise.all(chunk.map(cat => processCategory(cat)));
-
-                    // Brief cooldown between chunks to respect API limits (safe speedup)
-                    if (i + CONCURRENCY_LIMIT < targetCategories.length) {
-                        await new Promise(resolve => setTimeout(resolve, 2000));
                     }
                 }
 
