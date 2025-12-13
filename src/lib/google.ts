@@ -56,8 +56,8 @@ export async function getMovieQueue(): Promise<MovieQueueItem[]> {
             const status = row[COL_STATUS];
             const category = row[COL_CATEGORY];
 
-            // Check if status is '1' (Single) or '2' (Batch) and we have an ID
-            if (tmdbId && (status === '1' || status === '2')) {
+            // Check if status is '1' (Single), '2' (Batch), or '3' (Batch No Asset) and we have an ID
+            if (tmdbId && (status === '1' || status === '2' || status === '3')) {
                 queue.push({
                     rowIndex: index + 2, // +2 because 1-based and header row
                     tmdbId: tmdbId,
