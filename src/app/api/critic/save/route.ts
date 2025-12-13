@@ -24,13 +24,14 @@ export async function POST(request: Request) {
         const dirPath = path.join(process.cwd(), 'source_md', 'critic');
         const filePath = path.join(dirPath, filename);
 
-        // 2. Ensure Directory Exists
-        if (!fs.existsSync(dirPath)) {
-            fs.mkdirSync(dirPath, { recursive: true });
-        }
+        // 2. Ensure Directory Exists & 3. Write File (Try/Catch for Serverless/Web)
+        try {
+            if (!fs.existsSync(dirPath)) {
+                fs.mkdirSync(dirPath, { recursive: true });
+            }
 
-        // 3. Create Markdown Content
-        const mdContent = `---
+            // 3. Create Markdown Content
+            const mdContent = `---
 type: critic_result
 date: ${date.toISOString()}
 query: "${query.replace(/"/g, '\\"')}"
@@ -43,9 +44,13 @@ ${query}
 ${result}
 `;
 
-        // 4. Write File
-        fs.writeFileSync(filePath, mdContent);
-        console.log(`[Critic AI] Saved markdown to: ${filePath}`);
+            // 4. Write File
+            fs.writeFileSync(filePath, mdContent);
+            console.log(`[Critic AI] Saved markdown to: ${filePath}`);
+        } catch (fsError) {
+            console.warn("[Critic AI] Could not write file to disk (likely serverless environment). Proceeding to DB save only.", fsError);
+            // We do NOT stop here. We continue to save to DB so user data is safe.
+        }
 
         // 5. Save to Firestore
         const savedItem = {
