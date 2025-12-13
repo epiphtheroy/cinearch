@@ -79,9 +79,17 @@ export async function POST(_request: Request) {
                 }
 
                 // Determine Categories to Process
-                const targetCategories = item.status === '2' ? BATCH_CATEGORIES : [item.promptDocId || "Default"];
+                let targetCategories: string[] = [item.promptDocId || "Default"];
 
-                console.log(`Processing Row ${item.rowIndex} (ID: ${item.tmdbId}). Mode: ${item.status === '2' ? 'Batch' : 'Single'}. Categories: ${targetCategories.length}`);
+                if (item.status === '2') {
+                    // Status 2: All Batch Categories
+                    targetCategories = BATCH_CATEGORIES;
+                } else if (item.status === '3') {
+                    // Status 3: All Batch Categories EXCEPT 'ASSET'
+                    targetCategories = BATCH_CATEGORIES.filter(cat => cat !== 'ASSET');
+                }
+
+                console.log(`Processing Row ${item.rowIndex} (ID: ${item.tmdbId}). Mode: ${item.status === '2' ? 'Full Batch' : (item.status === '3' ? 'Batch (No Asset)' : 'Single')}. Categories: ${targetCategories.length}`);
 
                 for (const catName of targetCategories) {
                     try {
@@ -95,8 +103,8 @@ export async function POST(_request: Request) {
                             continue;
                         }
 
-                        // Delay for 10 seconds if Batch mode (to avoid rate limits or overwhelm)
-                        if (item.status === '2') {
+                        // Delay for 10 seconds if Batch mode (Status 2 or 3) to avoid rate limits
+                        if (item.status === '2' || item.status === '3') {
                             await new Promise(resolve => setTimeout(resolve, 10000));
                         }
 
