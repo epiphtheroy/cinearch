@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { streamCriticAiResponse } from '@/lib/vertex';
 
-// Allow this function to run for up to 60 seconds
-export const maxDuration = 60;
+// Allow this function to run for up to 300 seconds
+export const maxDuration = 300;
 export const dynamic = 'force-dynamic'; // Prevent caching
 
 export async function POST(request: Request) {

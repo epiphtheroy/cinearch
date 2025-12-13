@@ -72,12 +72,18 @@ export default function CriticPage() {
         const aiMsgId = Date.now();
         setMessages(prev => [...prev, { role: 'ai', content: '', timestamp: aiMsgId }]);
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s connection timeout
+
         try {
             const response = await fetch('/api/critic/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query: userMsg.content }),
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId); // Connected, clear timeout
 
             if (!response.ok) throw new Error(response.statusText);
 
@@ -86,34 +92,25 @@ export default function CriticPage() {
 
             const decoder = new TextDecoder();
             let accumulatedText = '';
+            let buffer = '';
+
+            // Regex to find "text": "..." 
+            // We use a global regex to find multiple occurrences
+            const regex = /"text":\s*"((?:[^"\\]|\\.)*)"/g;
 
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
                 const chunk = decoder.decode(value, { stream: true });
-                // Vertex sends a JSON array stream. We need to extract specific "text" fields.
-                // Simple regex robustly finds the text value even in broken JSON chunks
-                // Pattern matches: "text": "captured_group"
-                // Note: This regex handles simple escaped quotes roughly.
+                buffer += chunk;
 
-                // We run regex on the NEW chunk + potentially tail of old chunk?
-                // Actually, Vertex sends fairly clean chunks. Let's just Regex the chunk.
-                // NOTE: A text value might be split across chunks. Ideally we buffer.
-                // BUT for now, let's try just scanning the chunk.
-
-                // Improved Strategy:
-                // Since we are rebuilding a JSON string, extracting "text" is tricky if it splits.
-                // Simpler: Just accumulate the WHOLE response for safety, but display reasonably.
-                // Actually, the regex `/"text":\s*"((?:[^"\\]|\\.)*)"/g` is decent.
-
-                const regex = /"text":\s*"((?:[^"\\]|\\.)*)"/g;
+                // Scan buffer for matches
                 let match;
-                while ((match = regex.exec(chunk)) !== null) {
-                    // JSON decode the matched string to handle escapes like \n, \"
+                let lastIndex = 0;
+
+                while ((match = regex.exec(buffer)) !== null) {
                     try {
-                        // match[1] depends on capture group. The regex matches the content inside quotes.
-                        // We need to wrap it in quotes to JSON.parse it safely back to a string
                         const textFragment = JSON.parse(`"${match[1]}"`);
                         accumulatedText += textFragment;
 
@@ -125,23 +122,35 @@ export default function CriticPage() {
                             }
                             return newMsgs;
                         });
-                    } catch {
-                        // Ignore JSON parse errors for partial chunks
+                    } catch (e) {
+                        console.warn("JSON parse error on fragment", e);
                     }
+                    // Track position of last match end
+                    lastIndex = regex.lastIndex;
+                }
+
+                if (lastIndex > 0) {
+                    buffer = buffer.slice(lastIndex);
+                    // Reset regex state since we are processing a new string next time
+                    regex.lastIndex = 0;
                 }
             }
-
         } catch (err: any) {
             console.error("Chat error", err);
             setMessages(prev => {
                 const newMsgs = [...prev];
                 const lastMsg = newMsgs[newMsgs.length - 1];
                 if (lastMsg.role === 'ai') {
-                    lastMsg.content += `\n\n[Error: ${err.message || 'Connection failed'}]`;
+                    if (err.name === 'AbortError') {
+                        lastMsg.content += `\n\n[Error: Connection timed out. Please try again.]`;
+                    } else {
+                        lastMsg.content += `\n\n[Error: ${err.message || 'Connection failed'}]`;
+                    }
                 }
                 return newMsgs;
             });
         } finally {
+            clearTimeout(timeoutId); // Ensure cleared
             setIsLoading(false);
         }
     };
@@ -154,11 +163,15 @@ export default function CriticPage() {
             const queryMsg = messages[index - 1];
             const associatedQuery = queryMsg?.role === 'user' ? queryMsg.content : "Unknown Query";
 
+            console.log("Saving result:", { query: associatedQuery, resultLength: msg.content.length });
+
             const res = await axios.post('/api/critic/save', {
                 query: associatedQuery,
                 result: msg.content,
                 timestamp: msg.timestamp
             });
+
+            console.log("Save response:", res.data);
 
             // Mark locally as saved
             const updated = [...messages];
@@ -167,10 +180,10 @@ export default function CriticPage() {
 
             // Show detailed feedback
             const cleanPath = res.data.filePath ? res.data.filePath.split('/').pop() : 'file';
-            alert(`Result saved successfully!\n\nFile: source_md/critic/${cleanPath}\nCheck 'source_md/critic' folder in your project.`);
-        } catch (err) {
-            console.error("Save error", err);
-            alert("Failed to save result.");
+            window.alert(`result saved to: source_md/critic/${cleanPath}`);
+        } catch (err: any) {
+            console.error("Save error full details:", err);
+            window.alert(`Failed to save: ${err.response?.data?.error || err.message}`);
         }
     };
 
