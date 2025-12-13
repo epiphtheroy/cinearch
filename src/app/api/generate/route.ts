@@ -91,23 +91,22 @@ export async function POST(_request: Request) {
 
                 console.log(`Processing Row ${item.rowIndex} (ID: ${item.tmdbId}). Mode: ${item.status === '2' ? 'Full Batch' : (item.status === '3' ? 'Batch (No Asset)' : 'Single')}. Categories: ${targetCategories.length}`);
 
-                // Process categories sequentially for maximum stability
-                for (let i = 0; i < targetCategories.length; i++) {
-                    const catName = targetCategories[i];
+                // Process categories with a staggered start (5s interval)
+                // This allows parallel processing but prevents hitting the API all at once.
+
+                const processCategoryWithDelay = async (catName: string, index: number) => {
+                    // Staggered Delay: Wait 5s * index before starting
+                    if (index > 0) {
+                        await new Promise(resolve => setTimeout(resolve, index * 5000));
+                    }
+
+                    console.log(`[Batch] Starting category '${catName}' (Index ${index})...`);
 
                     try {
-                        // 1. Get Prompt Doc ID
                         const promptDocId = PROMPT_MAP[catName];
-
                         if (!promptDocId) {
                             console.warn(`[Batch] Skipping category '${catName}' - No Doc ID configured.`);
-                            continue;
-                        }
-
-                        // Add safety delay BEFORE processing (except the first one) to let API cool down
-                        if (i > 0 && (item.status === '2' || item.status === '3')) {
-                            console.log(`[Batch] Waiting 5s before next category...`);
-                            await new Promise(resolve => setTimeout(resolve, 5000));
+                            return;
                         }
 
                         const promptContent = await getPromptContent(promptDocId);
@@ -120,18 +119,15 @@ export async function POST(_request: Request) {
                         const movieId = item.tmdbId;
                         const catNameUpper = catName.toUpperCase();
                         const catTitle = sanitizeFilename(catNameUpper);
-
-                        // Save to source_md_en
-                        // Filename: [movieId]Title_[CATEGORY]_EN.md
                         const filenameEN = `[${movieId}]${sanitizeFilename(movieTitle)}_[${catTitle}]_EN.md`;
                         const outputPathEN = path.join(process.cwd(), 'source_md_en', filenameEN);
 
-                        if (!fs.existsSync(path.dirname(outputPathEN))) {
-                            fs.mkdirSync(path.dirname(outputPathEN), { recursive: true });
-                        }
-
-                        // Frontmatter for EN
-                        const frontmatterEN = `---
+                        try {
+                            if (!fs.existsSync(path.dirname(outputPathEN))) {
+                                fs.mkdirSync(path.dirname(outputPathEN), { recursive: true });
+                            }
+                            // Frontmatter for EN
+                            const frontmatterEN = `---
 movieId: ${movieId}
 movieTitle: ${movieTitle}
 categoryName: ${catNameUpper}
@@ -141,8 +137,11 @@ lang: en
 ---
 
 `;
-                        fs.writeFileSync(outputPathEN, frontmatterEN + generatedMarkdownEN);
-                        console.log(`[Generate] Saved EN: ${filenameEN}`);
+                            fs.writeFileSync(outputPathEN, frontmatterEN + generatedMarkdownEN);
+                            console.log(`[Generate] Saved EN: ${filenameEN}`);
+                        } catch (fsErr) {
+                            console.warn("FS Write Error (EN):", fsErr);
+                        }
 
 
                         // --- STEP 2: Translate to Korean ---
@@ -160,11 +159,11 @@ lang: en
                             const filenameKO = `[${movieId}]${sanitizeFilename(movieTitle)}_[${catTitle}]_KO.md`;
                             const outputPathKO = path.join(process.cwd(), 'source_md', filenameKO);
 
-                            if (!fs.existsSync(path.dirname(outputPathKO))) {
-                                fs.mkdirSync(path.dirname(outputPathKO), { recursive: true });
-                            }
-
-                            const frontmatterKO = `---
+                            try {
+                                if (!fs.existsSync(path.dirname(outputPathKO))) {
+                                    fs.mkdirSync(path.dirname(outputPathKO), { recursive: true });
+                                }
+                                const frontmatterKO = `---
 movieId: ${movieId}
 movieTitle: ${movieTitle}
 categoryName: ${catNameUpper}
@@ -174,8 +173,11 @@ lang: ko
 ---
 
 `;
-                            fs.writeFileSync(outputPathKO, frontmatterKO + generatedMarkdownKO);
-                            console.log(`[Generate] Saved KO: ${filenameKO}`);
+                                fs.writeFileSync(outputPathKO, frontmatterKO + generatedMarkdownKO);
+                                console.log(`[Generate] Saved KO: ${filenameKO}`);
+                            } catch (fsErr) {
+                                console.warn("FS Write Error (KO):", fsErr);
+                            }
 
                             results.push({ title: movieTitle, category: catName, status: 'Success (EN+KO)', file: filenameKO });
 
@@ -188,7 +190,13 @@ lang: ko
                         console.error(`[Batch Error] Failed category '${catName}' for movie '${movieTitle}': `, catError.message);
                         results.push({ title: movieTitle, category: catName, status: 'Skipped', error: catError.message });
                     }
-                }
+                };
+
+                // Create all promises with their staggered delays hardcoded
+                const categoryPromises = targetCategories.map((cat, idx) => processCategoryWithDelay(cat, idx));
+
+                // Wait for ALL to complete (but they started with staggered timing)
+                await Promise.all(categoryPromises);
 
                 // 4. Update Status
                 await updateRowStatus(item.rowIndex, 'Done');
