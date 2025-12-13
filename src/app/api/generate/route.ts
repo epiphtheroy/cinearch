@@ -91,13 +91,13 @@ export async function POST(_request: Request) {
 
                 console.log(`Processing Row ${item.rowIndex} (ID: ${item.tmdbId}). Mode: ${item.status === '2' ? 'Full Batch' : (item.status === '3' ? 'Batch (No Asset)' : 'Single')}. Categories: ${targetCategories.length}`);
 
-                // Process categories with a staggered start (5s interval)
+                // Process categories with a staggered start (10s interval)
                 // This allows parallel processing but prevents hitting the API all at once.
 
                 const processCategoryWithDelay = async (catName: string, index: number) => {
-                    // Staggered Delay: Wait 5s * index before starting
+                    // Staggered Delay: Wait 10s * index before starting
                     if (index > 0) {
-                        await new Promise(resolve => setTimeout(resolve, index * 5000));
+                        await new Promise(resolve => setTimeout(resolve, index * 10000));
                     }
 
                     console.log(`[Batch] Starting category '${catName}' (Index ${index})...`);
