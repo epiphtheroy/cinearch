@@ -4,10 +4,6 @@ import { Timestamp } from 'firebase-admin/firestore';
 import fs from 'fs';
 import path from 'path';
 
-function sanitizeFilename(text: string): string {
-    return text.replace(/[^a-zA-Z0-9가-힣\s]/g, '').trim().substring(0, 50);
-}
-
 export async function POST(request: Request) {
     const adminDb = getAdminDb();
     try {
@@ -19,14 +15,12 @@ export async function POST(request: Request) {
 
         // 1. Prepare Metadata
         const date = new Date();
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        const dateStr = `${year}-${month}-${day}`;
 
-        // Generate flexible filename
-        const safeTitle = sanitizeFilename(query);
-        const filename = `[CRITIC]_${dateStr}_${safeTitle || 'Untitled'}.md`;
+        // Generate filename based on User Request: [CRITIC]_[PromptWhole].md
+        // Sanitize: remove invalid FS chars but keep spaces/Korean. Truncate to avoid FS limit (255).
+        const sanitizedQuery = query.replace(/[<>:"/\\|?*]/g, '').trim().substring(0, 240);
+        const filename = `[CRITIC]_${sanitizedQuery}.md`;
+
         const dirPath = path.join(process.cwd(), 'source_md', 'critic');
         const filePath = path.join(dirPath, filename);
 

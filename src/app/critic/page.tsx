@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Save, MessageSquare, Plus, Bot, User } from 'lucide-react';
+import { Send, MessageSquare, Plus, Bot, User } from 'lucide-react';
 import axios from 'axios';
 
 interface Message {
@@ -135,6 +135,55 @@ export default function CriticPage() {
                     regex.lastIndex = 0;
                 }
             }
+
+            // AUTO-SAVE LOGIC START
+            // Streaming finished successfully. Save the result.
+            // We need to pass the *final* accumulatedText, relying on state might be slightly racy if batching.
+            // But we have accumulatedText local var.
+
+            // To be safe, we invoke a helper or logic here.
+            // Re-using the logic from handleSaveResult but adapted for auto-execute.
+            try {
+                // Determine query from previous message (or local var query? No, local query is cleared)
+                // We pushed userMsg to messages array. Last message is AI. Previous is User.
+                // However, state update is async. 
+                // Reliable way: we have userMsg.content in scope from earlier in this function!
+
+                const associatedQuery = userMsg.content;
+
+                console.log("[AutoSave] Saving result...", { length: accumulatedText.length });
+
+                const saveRes = await fetch('/api/critic/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: associatedQuery,
+                        result: accumulatedText,
+                        timestamp: aiMsgId
+                    })
+                });
+
+                const saveData = await saveRes.json();
+                console.log("[AutoSave] Completed:", saveData);
+
+                if (saveData.success) {
+                    // Update state to show "Saved" indicator if we want, or just toast
+                    setMessages(prev => {
+                        const newMsgs = [...prev];
+                        const lastMsg = newMsgs[newMsgs.length - 1];
+                        if (lastMsg.role === 'ai') {
+                            lastMsg.savedId = saveData.id;
+                            // Append a small note or just rely on console
+                            lastMsg.content += `\n\n✅ Analysis automatically saved to: ${saveData.filePath.split('/').pop()}`;
+                        }
+                        return newMsgs;
+                    });
+                }
+            } catch (saveError) {
+                console.error("[AutoSave] Failed:", saveError);
+            }
+            // AUTO-SAVE LOGIC END
+
         } catch (err: any) {
             console.error("Chat error", err);
             setMessages(prev => {
@@ -155,37 +204,7 @@ export default function CriticPage() {
         }
     };
 
-    const handleSaveResult = async (msg: Message, index: number) => {
-        if (msg.role !== 'ai' || msg.savedId) return;
 
-        try {
-            // Find the query associated (the message before it)
-            const queryMsg = messages[index - 1];
-            const associatedQuery = queryMsg?.role === 'user' ? queryMsg.content : "Unknown Query";
-
-            console.log("Saving result:", { query: associatedQuery, resultLength: msg.content.length });
-
-            const res = await axios.post('/api/critic/save', {
-                query: associatedQuery,
-                result: msg.content,
-                timestamp: msg.timestamp
-            });
-
-            console.log("Save response:", res.data);
-
-            // Mark locally as saved
-            const updated = [...messages];
-            updated[index].savedId = res.data.id;
-            setMessages(updated);
-
-            // Show detailed feedback
-            const cleanPath = res.data.filePath ? res.data.filePath.split('/').pop() : 'file';
-            window.alert(`result saved to: source_md/critic/${cleanPath}`);
-        } catch (err: any) {
-            console.error("Save error full details:", err);
-            window.alert(`Failed to save: ${err.response?.data?.error || err.message}`);
-        }
-    };
 
     return (
         <div className="flex h-[calc(100vh-64px)] bg-[#0f0f0f] text-gray-200 font-sans overflow-hidden">
@@ -250,21 +269,6 @@ export default function CriticPage() {
                                             {msg.content}
                                         </div>
 
-                                        {msg.role === 'ai' && (
-                                            <div className="flex gap-2 mt-2">
-                                                <button
-                                                    onClick={() => handleSaveResult(msg, idx)}
-                                                    disabled={!!msg.savedId}
-                                                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border transition-all shadow-md active:scale-95 ${msg.savedId
-                                                        ? 'border-green-700 bg-green-900/40 text-green-400 cursor-default'
-                                                        : 'border-purple-600/50 bg-purple-900/20 hover:bg-purple-900/40 hover:border-purple-500 text-purple-200'
-                                                        }`}
-                                                >
-                                                    <Save size={14} />
-                                                    {msg.savedId ? 'Saved to Project' : 'Save Analysis'}
-                                                </button>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
                             ))}
@@ -280,6 +284,7 @@ export default function CriticPage() {
                                     </div>
                                 </div>
                             )}
+                            {/* Auto-save notification area or just history update */}
                             <div ref={bottomRef} className="h-8" />
                         </div>
                     )}

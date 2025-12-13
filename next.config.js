@@ -11,6 +11,7 @@ if (fs.existsSync(keyFilePath)) {
 }
 
 /** @type {import('next').NextConfig} */
+// Force restart
 const nextConfig = {
     images: {
         remotePatterns: [
