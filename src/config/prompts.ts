@@ -15,7 +15,7 @@ export const PROMPT_MAP: Record<string, string> = {
     "PHENOMENON": "1FiFjEeP_Ae9W6V4udnvNfQOGw5ckoELDxZwLXdY33IE",
     "NOUMENON": "1SVoyPWMsVeXaUdWgDtW2qCCAn-wE3U2Y7bBintXONpY",
     "ENIGMA": "1YO2oQuSf8jP89fmhB_IoNf9DaYJGsEfTsmfMX9NjifI",
-    "CHARACTER": "1T8zw_9RIQA7FqSzlxPUkoaC0HILFVuwV5ljRWAroLE",
+    "CHARACTER": "1T8zw_9RIQA7FqSzlxPUkoaC0HILFVuwV5ljRWAroLEI",
     "PSYCHO": "1PMhr-5czsreYJQys2acYBWef1yXa9DJUpnQycYoLM1o",
     "FIGURE": "1RRUDvWty3vJO5wjWGf4fURtZMMglJ8hYZSsClRihmHE",
     "PHILOSOPHY": "1KBsDX36ZvUbBmbqNo2XpnmuUBELq2z9xWZn6TlAjsnU",
