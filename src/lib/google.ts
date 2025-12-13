@@ -36,35 +36,53 @@ const COL_TMDB_ID = 0;
 const COL_STATUS = 2; // Column C
 const COL_CATEGORY = 3; // Column D
 
+const SHEET_NAME = 'Sheet1'; // Reverted to default per user confirmation
+
 export async function getMovieQueue(): Promise<MovieQueueItem[]> {
     if (!SPREADSHEET_ID) throw new Error("GOOGLE_SHEET_ID not set");
 
-    const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: 'Sheet1!A2:D100', // Expanded range to include Col D
-    });
+    try {
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId: SPREADSHEET_ID,
+            range: `${SHEET_NAME}!A2:D100`, // Expanded range to include Col D
+        });
 
-    const rows = response.data.values;
-    if (!rows) return [];
+        const rows = response.data.values;
+        if (!rows) return [];
 
-    const queue: MovieQueueItem[] = [];
-    rows.forEach((row, index) => {
-        const tmdbId = row[COL_TMDB_ID]?.toString().trim();
-        const status = row[COL_STATUS];
-        const category = row[COL_CATEGORY];
+        const queue: MovieQueueItem[] = [];
+        rows.forEach((row, index) => {
+            const tmdbId = row[COL_TMDB_ID]?.toString().trim();
+            const status = row[COL_STATUS];
+            const category = row[COL_CATEGORY];
 
-        // Check if status is '1' (Single) or '2' (Batch) and we have an ID
-        if (tmdbId && (status === '1' || status === '2')) {
-            queue.push({
-                rowIndex: index + 2, // +2 because 1-based and header row
-                tmdbId: tmdbId,
-                status: status,
-                promptDocId: category // For Status 1, this is category. For 2, maybe empty.
-            });
+            // Check if status is '1' (Single) or '2' (Batch) and we have an ID
+            if (tmdbId && (status === '1' || status === '2')) {
+                queue.push({
+                    rowIndex: index + 2, // +2 because 1-based and header row
+                    tmdbId: tmdbId,
+                    status: status,
+                    promptDocId: category // For Status 1, this is category. For 2, maybe empty.
+                });
+            }
+        });
+
+        return queue;
+    } catch (error: any) {
+        console.error(`Error accessing sheet "${SHEET_NAME}":`, error.message);
+
+        // Debug: List available sheets
+        try {
+            const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+            const sheetTitles = meta.data.sheets?.map(s => s.properties?.title) || [];
+            console.error("AVAILABLE SHEETS:", JSON.stringify(sheetTitles, null, 2));
+            console.error("Please verify that your configured SHEET_NAME matches one of the above exactly.");
+        } catch (metaError) {
+            console.error("Could not fetch spreadsheet metadata.");
         }
-    });
 
-    return queue;
+        throw error;
+    }
 }
 
 export async function getPromptContent(docId: string): Promise<string> {
@@ -88,7 +106,7 @@ export async function updateRowStatus(rowIndex: number, newStatus: string) {
 
     await sheets.spreadsheets.values.update({
         spreadsheetId: SPREADSHEET_ID,
-        range: `Sheet1!C${rowIndex}`, // Status is now Column C
+        range: `${SHEET_NAME}!C${rowIndex}`, // Status is now Column C
         valueInputOption: 'RAW',
         requestBody: {
             values: [[newStatus]]

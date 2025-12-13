@@ -137,7 +137,7 @@ export default function MovieGrid({ initialMovies }: { initialMovies: any[] }) {
 
 function MovieCard({ movie }: { movie: Movie }) {
     return (
-        <Link href={`/movie/${movie.id}`} className="group block">
+        <Link href={`/movie/movie_${movie.id.replace(/^movie_/, '')}`} className="group block">
             {/* Poster */}
             <div className="relative aspect-[2/3] bg-zinc-200 overflow-hidden mb-3 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-300">
                 {movie.metadata?.posterUrl ? (

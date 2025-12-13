@@ -178,6 +178,8 @@ export async function POST(req: Request) {
 
         console.log(`Sync finished. Uploaded: ${uploadedCount}, Skipped: ${skippedCount}`);
 
+
+
         return NextResponse.json({
             message: `Smart Sync completed. Uploaded: ${uploadedCount}, Skipped: ${skippedCount} (Unchanged).`,
             results

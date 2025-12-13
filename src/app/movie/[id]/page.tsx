@@ -54,8 +54,9 @@ async function getArticles(movieId: string) {
         const snapshot = await getDocs(q);
         console.log(`[Server] Fetched ${snapshot.size} articles for movie ${rawId} (checked variants)`);
 
-        return snapshot.docs.map(doc => {
+        const validArticles = snapshot.docs.map(doc => {
             const data = doc.data();
+            console.log(`[Server] Found article: ${doc.id} | category: ${data.categoryName} | movieIdStr: ${data.movieIdStr}`);
             // Exclude 'movieId' (Reference) and convert 'updatedAt'
             const { movieId: _movieId, ...serializableData } = data;
             return {
@@ -68,6 +69,7 @@ async function getArticles(movieId: string) {
                 updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt || null
             };
         });
+        return validArticles;
     } catch (error) {
         console.error(`[Server] Error fetching articles for ${rawId}:`, error);
         return [];

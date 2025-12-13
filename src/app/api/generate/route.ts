@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getMovieQueue, getPromptContent, updateRowStatus } from '@/lib/google';
 import { generateMovieContent, generateCustomContent, getAiConfig } from '@/lib/llm';
+
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios'; // Added axios
+import axios from 'axios';
 import { PROMPT_MAP, BATCH_CATEGORIES } from '@/config/prompts';
 
 // Helper to sanitize filename
@@ -84,6 +85,8 @@ export async function POST(_request: Request) {
 
                 for (const catName of targetCategories) {
                     try {
+
+
                         // 1. Get Prompt Doc ID
                         const promptDocId = PROMPT_MAP[catName];
 

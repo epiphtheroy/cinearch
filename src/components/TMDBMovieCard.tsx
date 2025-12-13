@@ -57,7 +57,7 @@ export default function TMDBMovieCard({ movie }: { movie: Movie }) {
                     </span>
                 </div>
 
-                <Link href={`/movie/${movie.id}`} className="font-bold text-black text-sm hover:text-[#01b4e4] leading-tight block mt-1 line-clamp-2">
+                <Link href={`/movie/movie_${movie.id.replace(/^movie_/, '')}`} className="font-bold text-black text-sm hover:text-[#01b4e4] leading-tight block mt-1 line-clamp-2">
                     {movie.title}
                 </Link>
                 <p className="text-zinc-500 text-sm font-normal">

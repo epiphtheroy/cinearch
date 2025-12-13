@@ -8,6 +8,7 @@ import Link from 'next/link';
 import axios from 'axios';
 import { BATCH_CATEGORIES } from '@/config/prompts';
 
+
 interface Article {
     id: string;
     title: string;
@@ -47,7 +48,6 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
     const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
     // Sidebar Data State
-
     const [sidebarData, setSidebarData] = useState<any>(null);
 
     // Random Shuffle State
@@ -94,7 +94,8 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
     const activeArticle = articles.find(a => a.id === activeArticleId);
 
     return (
-        <div className="min-h-screen flex flex-col lg:flex-row font-sans bg-background text-foreground overflow-x-hidden lg:overflow-hidden">
+        <div className="min-h-screen flex flex-col lg:flex-row font-sans bg-background text-foreground overflow-x-hidden lg:overflow-hidden relative">
+
 
             {/* --- COLUMN 1: Movie Metadata (Sticky Left) --- */}
             {/* Width: ~18% */}
@@ -285,6 +286,9 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                     <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6 px-3 border-b border-zinc-900 pb-2">Index</h3>
 
                     <ul className="space-y-2 w-full">
+                        {/* Special CineCodex Link */}
+
+
                         {BATCH_CATEGORIES.map((category) => {
                             const matchingArticle = articles.find(a =>
                                 (a.categoryTitle || '').toUpperCase() === category.toUpperCase()

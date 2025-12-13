@@ -94,7 +94,7 @@ export default function AdminPage() {
         setLoading(true);
         setLogs(prev => [...prev, "Starting sync from source_md..."]);
         try {
-            const res = await fetch('/api/sync', { method: 'POST' });
+            const res = await fetch('/api/sync?force=true', { method: 'POST' });
             const data = await res.json();
 
             if (res.ok) {
@@ -170,41 +170,40 @@ export default function AdminPage() {
                         Reset Database
                     </button>
                 </div>
+            </div>
 
-                <h2 className="text-xl font-semibold mb-4">Deployment</h2>
-                <div className="flex flex-wrap gap-4">
-                    <button
-                        type="button"
-                        onClick={handleDeploy}
-                        disabled={loading}
-                        className={`px-8 py-4 rounded-md font-bold text-lg shadow-lg transition-all transform hover:scale-105 ${loading
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white ring-2 ring-purple-400/50'
-                            }`}
-                    >
-                        {loading ? 'Deploying...' : '웹페이지에 반영하기 (Latest Deploy)'}
-                    </button>
+            <div className="flex flex-wrap gap-4">
+                <button
+                    type="button"
+                    onClick={handleDeploy}
+                    disabled={loading}
+                    className={`px-8 py-4 rounded-md font-bold text-lg shadow-lg transition-all transform hover:scale-105 ${loading
+                        ? 'bg-gray-600 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white ring-2 ring-purple-400/50'
+                        }`}
+                >
+                    {loading ? 'Deploying...' : '웹페이지에 반영하기 (Latest Deploy)'}
+                </button>
 
-                    <button
-                        onClick={handleDeploy}
-                        disabled={loading}
-                        className="px-4 py-2 text-sm text-gray-400 hover:text-white underline"
-                    >
-                        (Legacy) Deploy to GitHub
-                    </button>
-                </div>
+                <button
+                    onClick={handleDeploy}
+                    disabled={loading}
+                    className="px-4 py-2 text-sm text-gray-400 hover:text-white underline"
+                >
+                    (Legacy) Deploy to GitHub
+                </button>
+            </div>
 
-                <div className="mt-8">
-                    <h3 className="text-lg font-medium mb-2">System Logs</h3>
-                    <div className="bg-black p-4 rounded border border-gray-700 h-64 overflow-y-auto font-mono text-sm text-green-400 shadow-inner">
-                        {logs.length === 0 ? (
-                            <span className="text-gray-600 opacity-50">Ready. Logs will appear here...</span>
-                        ) : (
-                            logs.map((log, i) => (
-                                <div key={i} className="mb-1 border-b border-gray-800/50 pb-1">{log}</div>
-                            ))
-                        )}
-                    </div>
+            <div className="mt-8">
+                <h3 className="text-lg font-medium mb-2">System Logs</h3>
+                <div className="bg-black p-4 rounded border border-gray-700 h-64 overflow-y-auto font-mono text-sm text-green-400 shadow-inner">
+                    {logs.length === 0 ? (
+                        <span className="text-gray-600 opacity-50">Ready. Logs will appear here...</span>
+                    ) : (
+                        logs.map((log, i) => (
+                            <div key={i} className="mb-1 border-b border-gray-800/50 pb-1">{log}</div>
+                        ))
+                    )}
                 </div>
             </div>
         </div>
