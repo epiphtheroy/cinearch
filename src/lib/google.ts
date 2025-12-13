@@ -77,7 +77,7 @@ export async function getMovieQueue(): Promise<MovieQueueItem[]> {
             const sheetTitles = meta.data.sheets?.map(s => s.properties?.title) || [];
             console.error("AVAILABLE SHEETS:", JSON.stringify(sheetTitles, null, 2));
             console.error("Please verify that your configured SHEET_NAME matches one of the above exactly.");
-        } catch (metaError) {
+        } catch {
             console.error("Could not fetch spreadsheet metadata.");
         }
 

@@ -7,6 +7,7 @@ export async function GET(
 ) {
     const { id } = await params;
     const apiKey = process.env.TMDB_API_KEY;
+    const tmdbId = id.replace(/^movie_/, '');
 
     if (!apiKey) {
         return NextResponse.json({ error: 'TMDB API key not configured' }, { status: 500 });
@@ -14,7 +15,7 @@ export async function GET(
 
     try {
         // 1. Fetch Movie Details with Credits and External IDs
-        const movieRes = await axios.get(`https://api.themoviedb.org/3/movie/${id}`, {
+        const movieRes = await axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}`, {
             params: {
                 api_key: apiKey,
                 append_to_response: 'credits,external_ids',

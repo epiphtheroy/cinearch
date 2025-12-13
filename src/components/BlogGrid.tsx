@@ -91,7 +91,7 @@ export default function BlogGrid({ initialArticles }: { initialArticles: Article
                     {articles.map((article) => (
                         <Link
                             key={article.id}
-                            href={`/${article.lang || 'en'}/film/${article.categoryName.toLowerCase()}/${article.slug || article.id}`}
+                            href={`/movie/movie_${article.movieIdStr.replace(/^movie_/, '')}`}
                             className="group flex flex-col bg-white rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 border border-transparent hover:border-black/5"
                         >
                             <div className="p-8 flex flex-col h-full">

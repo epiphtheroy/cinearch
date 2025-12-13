@@ -286,7 +286,6 @@ export default function FourColumnLayout({ movie, articles }: FourColumnLayoutPr
                     <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-6 px-3 border-b border-zinc-900 pb-2">Index</h3>
 
                     <ul className="space-y-2 w-full">
-                        {/* Special CineCodex Link */}
 
 
                         {BATCH_CATEGORIES.map((category) => {

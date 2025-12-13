@@ -152,12 +152,7 @@ export default function AdminPage() {
                         2. Sync Local Files
                     </button>
 
-                    <Link
-                        href="/admin/generator"
-                        className="px-6 py-3 rounded-md font-medium transition-colors border border-yellow-500/30 bg-yellow-600/20 hover:bg-yellow-600 text-yellow-100 hover:text-white flex items-center justify-center text-center"
-                    >
-                        3. Visual Generator
-                    </Link>
+
 
                     <button
                         onClick={handleClear}

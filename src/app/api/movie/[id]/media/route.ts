@@ -8,6 +8,7 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     const { id } = params;
+    const tmdbId = id.replace(/^movie_/, '');
 
     if (!TMDB_API_KEY) {
         return NextResponse.json({ error: 'TMDB_API_KEY not configured' }, { status: 500 });
@@ -16,10 +17,10 @@ export async function GET(
     try {
         // Fetch Videos and Images in parallel
         const [videosRes, imagesRes] = await Promise.all([
-            axios.get(`https://api.themoviedb.org/3/movie/${id}/videos`, {
+            axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}/videos`, {
                 params: { api_key: TMDB_API_KEY, language: 'en-US' }
             }),
-            axios.get(`https://api.themoviedb.org/3/movie/${id}/images`, {
+            axios.get(`https://api.themoviedb.org/3/movie/${tmdbId}/images`, {
                 params: { api_key: TMDB_API_KEY } // Images often don't need language strictly, allows more results
             })
         ]);

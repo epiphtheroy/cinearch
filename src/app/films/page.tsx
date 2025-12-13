@@ -41,7 +41,7 @@ export default async function FilmsPage() {
                 {movies.map(movie => (
                     <div key={movie.id} className="border-b border-gray-800 pb-2">
                         <Link
-                            href={`/movie/${movie.id}`}
+                            href={`/movie/movie_${movie.id.replace(/^movie_/, '')}`}
                             className="text-gray-300 hover:text-white hover:text-purple-400 transition-colors block truncate"
                         >
                             {movie.title}

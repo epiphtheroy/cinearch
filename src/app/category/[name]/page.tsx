@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 async function getCategoryContent(categoryName: string) {
     try {
         const decodedName = decodeURIComponent(categoryName);
-        console.log(`Fetching content for category: ${decodedName}`);
+
 
         const q = query(collection(db, 'articles'), where('categoryName', '==', decodedName));
         const querySnapshot = await getDocs(q);
@@ -46,7 +46,7 @@ export default async function CategoryDetailPage({ params }: { params: { name: s
                 {articles.map((article: any) => (
                     <div key={article.id} className="bg-gray-800 p-6 rounded-lg border border-gray-700">
                         <h2 className="text-xl font-bold text-gray-100 mb-2">
-                            <Link href={`/movie/${article.movieIdStr}`} className="hover:text-blue-400 transition-colors">
+                            <Link href={`/movie/movie_${article.movieIdStr.replace(/^movie_/, '')}`} className="hover:text-blue-400 transition-colors">
                                 {article.movieTitle}
                             </Link>
                         </h2>
@@ -55,7 +55,7 @@ export default async function CategoryDetailPage({ params }: { params: { name: s
                         </div>
                         <div className="mt-4">
                             <Link
-                                href={`/movie/${article.movieIdStr}`}
+                                href={`/movie/movie_${article.movieIdStr.replace(/^movie_/, '')}`}
                                 className="text-blue-400 hover:text-blue-300 text-sm font-medium"
                             >
                                 Read full article →

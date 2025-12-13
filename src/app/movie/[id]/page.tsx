@@ -4,7 +4,7 @@ import FourColumnLayout from '@/components/FourColumnLayout';
 import Link from 'next/link';
 
 async function getMovieData(id: string) {
-    console.log(`[Server] Fetching movie data for input ID: "${id}"`);
+
 
     // Strategy 1: Try ID as provided
     let movieRef = doc(db, 'movies', id);
@@ -46,17 +46,16 @@ async function getArticles(movieId: string) {
     const rawId = movieId.replace('movie_', '');
     const prefixedId = movieId.startsWith('movie_') ? movieId : `movie_${movieId}`;
 
-    console.log(`[Server] Querying articles for IDs: ${rawId}, ${prefixedId}`);
+
 
     try {
         // Query for both raw ID and prefixed ID to handle inconsistencies
         const q = query(collection(db, 'articles'), where('movieIdStr', 'in', [rawId, prefixedId]));
         const snapshot = await getDocs(q);
-        console.log(`[Server] Fetched ${snapshot.size} articles for movie ${rawId} (checked variants)`);
 
-        const validArticles = snapshot.docs.map(doc => {
+
+        return snapshot.docs.map(doc => {
             const data = doc.data();
-            console.log(`[Server] Found article: ${doc.id} | category: ${data.categoryName} | movieIdStr: ${data.movieIdStr}`);
             // Exclude 'movieId' (Reference) and convert 'updatedAt'
             const { movieId: _movieId, ...serializableData } = data;
             return {
@@ -69,7 +68,6 @@ async function getArticles(movieId: string) {
                 updatedAt: data.updatedAt?.toDate?.().toISOString() || data.updatedAt || null
             };
         });
-        return validArticles;
     } catch (error) {
         console.error(`[Server] Error fetching articles for ${rawId}:`, error);
         return [];
@@ -97,7 +95,7 @@ export default async function MoviePage({ params }: { params: Promise<{ id: stri
                 <ul className="space-y-2">
                     {allMovies.map(m => (
                         <li key={m.id}>
-                            <Link href={`/movie/${m.id}`} className="text-blue-400 hover:underline">
+                            <Link href={`/movie/movie_${m.id.replace(/^movie_/, '')}`} className="text-blue-400 hover:underline">
                                 {m.title} (ID: {m.id})
                             </Link>
                         </li>
